@@ -1,0 +1,2131 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH"
+  dat_nam_01: "CASchools_01_data.txt"
+  dat_link_02: "https://ilias.uni-hohenheim.de/goto.php?target=file_1532689_download&client_id=UHOH"
+  dat_nam_02: "CPS_01_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/r_helper_functions.R")
+source("./r-scripts/texreg_extract_fun_02.R")
+
+# 4) load data
+cas.dat <- read.table(file = "./data-sets/CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+
+cps.dat <- read.table(file = "./data-sets/CPS_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric"))
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 04 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Linear Regression with One Regressor (Part 3)
+</p>
+
+
+
+
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data sets ``r params$dat_nam_01`` and ``r params$dat_nam_02`` from <span class="R">ILIAS</span> directly or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+<p class="down01">
+<a href="`r params$dat_link_02`">Download ``r params$dat_nam_02``</a>
+</p>
+
+Save the data set into a (working) directory of your choice.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+## Task 1 {.tabset .tabset-fade}
+
+<hr />
+
+<p class="head01">
+Student teacher ratio and student performance
+</p>
+
+<!-- We want to analyze the relationship between student performance and class size. For this we use again the data set `CASchool_01_data.txt` and the two variables $test score$ and $STR$ as obtained in the first exercise sheet. -->
+
+We continue our analysis of the relationship between student performance and class size.
+
+For this we use again the data set `CASchool_01_data.txt` and the two variables $test score$ and $STR$ as obtained in the first exercise sheet.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="col_content">
+
+| Variable   | Description            | 
+|:-----------|:-----------------------| 
+| $students$ | Total enrollment.      | 
+| $teachers$ | Number of teachers.    | 
+| $read$     | Average reading score. | 
+| $math$     | Average math score.    | 
+
+</div>
+<!--..........................................................................-->
+
+<hr>
+
+
+
+
+
+<!--..........................................................................-->
+### Preparations
+
+Load data, construct variables and estimation results.
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+cas.dat <- read.table(file = "CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Construct variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# compute STR and append it to cas.dat
+cas.dat$STR <- cas.dat$students/cas.dat$teachers 
+# compute TestScore and append it to cas.dat
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2 
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Estimation results No 01
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# estimate linear model
+lm.res.01 <- lm(score ~ STR, data = cas.dat)
+# show results
+lm.res.01
+```
+</div>
+<!--..........................................................................-->
+
+
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some additional calculations and transformations!)* </button>
+<div class="col_content">
+
+The estimation results below include robust standard errors which are not part of the results from the `lm()` function above.
+
+$\Rightarrow$ See: implementation below!
+
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate the model and assign the result to linear_model
+lm.res.01 <- lm(score ~ STR, data = cas.dat)
+```
+
+```{r,include=FALSE}
+library("sandwich")
+# Standard errors based on homoskedasticity
+vcx.ord.01 <- vcov(lm.res.01)
+se.ord.01 <- sqrt(diag(vcx.ord.01))
+se.ord.01
+# Heteroskedasticity-robust standard erros (based on White)
+vcx.rob.01 <- vcovHC(lm.res.01, type="HC0")
+se.rob.01 <- sqrt(diag(vcx.rob.01))
+se.rob.01
+
+vcx.rob.01.x1 <- vcovHC(lm.res.01, type="HC1")
+se.rob.01.x1 <- sqrt(diag(vcx.rob.01.x1))
+se.rob.01.x1
+```
+
+```{r,include=FALSE}
+library("lmtest")
+# Inference for estimated coefficients (based on homoskedasticity)
+lm.res.01.ct.01 <- coeftest(lm.res.01, vcov = vcovHC(lm.res.01, type="const"))
+lm.res.01.ct.01
+# Inference for estimated coefficients (heteroskedasticity robust based on White)
+lm.res.01.ct.02 <- coeftest(lm.res.01, vcov = vcovHC(lm.res.01, type="HC1"))
+lm.res.01.ct.02
+pval.rob.01 <- lm.res.01.ct.02[,4] 
+```
+
+```{r,include=TRUE}
+
+screenreg(list(lm.res.01),
+       override.se = list(se.rob.01),
+       override.pvalues = list(pval.rob.01),
+       caption = "Estimation Results",
+       caption.above = TRUE,
+       label = "Tab01",
+       #stars = numeric(0),
+       custom.model.names = NULL,
+       custom.coef.names = c("intercept","STR"),
+       float.pos = "h",
+       single.row = TRUE,
+       booktabs = TRUE,
+       dcolumn = TRUE,
+       use.packages = FALSE,
+       ci.force = FALSE,
+       digits = 2,
+       include.rsquared = TRUE,
+       include.adjrs = FALSE,
+       include.nobs = FALSE,
+       include.rmse = TRUE)
+
+```
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task a) 
+
+Replicate the results in Table 1 of the exercise sheet.
+
+<hr />
+
+<p class="head02">
+Estimate linear regression model
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# Estimate linear regression model
+lm.res.01 <- lm(score ~ STR, data = cas.dat)
+summary(lm.res.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Estimate linear regression model
+lm.res.01 <- lm(score ~ STR, data = cas.dat)
+summary(lm.res.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter Plot with Fitted Regression Line
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lm.res.01, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lm.res.01, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Standard error robust w.r.t. heteroskedasticity: Use *wrapper function* `lm_ct_fun()` from above
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function for robust inference
+lin.mod.rob <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+# print results
+lin.mod.rob$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function for robust inference
+lin.mod.rob <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+# print results
+lin.mod.rob$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: See Exercise Sheet No 3* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Sampling distribution of $\widehat{\beta}_1$
+</p>
+
+\begin{align}
+\widehat{\beta}_1 \sim N\left(\beta_1, \sigma^2_{\widehat{\beta}_1} \right) \;\;\; \text{(approximately)}
+\end{align}
+
+with (heteroskedasticity robust)
+
+\begin{align}
+\sigma^2_{\widehat{\beta}_1}=\frac{1}{n}\frac{\mathrm{var}\left[\left(X_i-\mu_X\right)u_i\right]}{\left[\mathrm{var}\left(X_i\right)\right]^2}
+\end{align}
+
+under homoskedasticity
+
+\begin{align}
+\tilde{\sigma}^2_{\widehat{\beta}_1}=\frac{1}{n}\frac{\mathrm{var}\left[u_i\right]}{\left[\mathrm{var}\left(X_i\right)\right]^2}
+\end{align}
+
+<p class="head02">
+Important
+</p>
+
+* Using heteroskedasticity robust SE is more complicated but more robust.
+* Heteroskedasticity robust SE are readily available in almost any statistics software.
+* $\Rightarrow$ In case of doubt use heteroskedasticity robust standard error!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+
+Test whether $STR$ has a significant effect on $score$.
+
+<hr />
+
+<p class="head02">
+Conduct inference
+</p>
+
+<hr />
+
+<p class="head03">
+Based on homoskedasticity only
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function lm_ct_fun (here, using homoskedastic ses)
+lm.ct.ord.01 <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "const")
+ct.ord.01 <- lm.ct.ord.01$ct
+ct.ord.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function lm_ct_fun (here, using homoskedastic ses)
+lm.ct.ord.01 <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "const")
+ct.ord.01 <- lm.ct.ord.01$ct
+ct.ord.01
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Robust w.r.t. heteroskedasticity 
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.01 <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+ct.rob.01 <- lm.ct.rob.01$ct
+ct.rob.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.01 <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+ct.rob.01 <- lm.ct.rob.01$ct
+ct.rob.01
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Confidence interval based on homoskedasticity only standard errors
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# 95% ci bounds based on homoskedasticity
+ci.95.up.ord.01 <- ct.ord.01[,1] + 1.96 * ct.ord.01[,2] # upper bound
+ci.95.lo.ord.01 <- ct.ord.01[,1] - 1.96 * ct.ord.01[,2] # lower bound
+# results
+cbind(ci.95.lo.ord.01, ci.95.up.ord.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# 95% ci bounds based on homoskedasticity
+ci.95.up.ord.01 <- ct.ord.01[,1] + 1.96 * ct.ord.01[,2] # upper bound
+ci.95.lo.ord.01 <- ct.ord.01[,1] - 1.96 * ct.ord.01[,2] # lower bound
+# results
+cbind(ci.95.lo.ord.01, ci.95.up.ord.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Confidence interval based on heteroskedasticity robust standard errors
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# 95% ci bounds based on heteroskedasticity
+ci.95.up.rob.01 <- ct.rob.01[,1] + 1.96 * ct.rob.01[,2] # upper bound
+ci.95.lo.rob.01 <- ct.rob.01[,1] - 1.96 * ct.rob.01[,2] # lower bound
+# results
+cbind(ci.95.lo.rob.01, ci.95.up.rob.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# 95% ci bounds based on heteroskedasticity
+ci.95.up.rob.01 <- ct.rob.01[,1] + 1.96 * ct.rob.01[,2] # upper bound
+ci.95.lo.rob.01 <- ct.rob.01[,1] - 1.96 * ct.rob.01[,2] # lower bound
+# results
+cbind(ci.95.lo.rob.01, ci.95.up.rob.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Statement of hypothesis* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+General (for slope parameter)
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{1} = \beta_{1,0} \quad \text{vs.} \\
+H_1&: \quad \beta_{1} \neq \beta_{1,0} \quad \alpha = 5\%
+\end{align}
+
+<hr />
+
+<p class="head02">
+Here
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{STR} = 0 \quad \text{vs.} \\
+H_1&: \quad \beta_{STR} \neq 0 \quad \alpha = 5\%
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Calculation of test statistic* </button>
+<div class="col_content">
+
+```{r,include=FALSE}
+
+tes.sta.val.00 <- (ct.rob.01[2,1]-0)/ct.rob.01[2,2]
+ct.rob.01[2,1]
+ct.rob.01[2,2]
+pval.00 <- 2*pnorm(-abs(tes.sta.val.00))
+pval.00
+pval.00 <- 2*pt(-abs(tes.sta.val.00), df=nrow(cas.dat)-2)
+pval.00
+
+
+
+tes.sta.val.00 <- (round(ct.rob.01[2,1],3)-0)/round(ct.rob.01[2,2],3)
+
+```
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+t^{act} &= \frac{\widehat{\beta}_{STR}^{act} - 0}{SE\left(\widehat{\beta}_{STR}\right)} \\
+t^{act} &= \frac{`r round(ct.rob.01[2,1],3)` - 0}{`r round(ct.rob.01[2,2],3)`} \\
+t^{act} &= `r round(tes.sta.val.00,3)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Conclusion based on test statistic* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* $|t^{act}| > 1.96$
+* $H_0$ can be rejected at 5\% significance level.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *And/or calculation of $p$-value of test statistic* </button>
+<div class="col_content">
+
+```{r,include=FALSE}
+
+tes.sta.val.00 <- (ct.rob.01[2,1]-0)/ct.rob.01[2,2]
+ct.rob.01[2,1]
+ct.rob.01[2,2]
+pval.00 <- 2*pnorm(-abs(tes.sta.val.00))
+pval.00
+pval.00 <- 2*pt(-abs(tes.sta.val.00), df=nrow(cas.dat)-2)
+pval.00
+
+```
+
+
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+p-\text{value} &= 2*\Phi\left(-|t^{act}|\right) \\
+&= 2*\Phi\left(`r -abs(round(tes.sta.val.00,3))`\right) \\
+&= `r signif(pval.00,3)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *And/or conclusion based on $p$-value* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Conclusion
+</p>
+
+* $p\text{-value}<0.05$
+* $H_0$ can be rejected at 5\% significance level.
+
+<hr />
+
+<p class="head03">
+Definition $p$-value
+</p>
+
+* The p-value is the probability of observing a value of $\widehat{\beta}$ at least as different from $\beta_{1,0}$ as the estimate actually computed $\left(\widehat{\beta}^{act}_1\right)$, assuming that the null hypothesis is correct.
+* Type I error, i.e. rejecting $H_0$ even if it is true.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *An Illustration of the $p$-value* </button>
+<div class="cod_content">
+
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+ill_hyp_tes_fun(t.act = -4.39, test = "two.sid")
+```
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation based on confidence interval* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* The $95\%$ confidence interval of $\widehat{\beta}_{STR}$ does not contain zero.
+* Thus, the estimate $\widehat{\beta}_{STR}$ is significant at a $5\%$ significance level
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+CDF Standard Normal Distribution
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Table of Stock and Watson (2020)* </button>
+<div class="col_content">
+
+![](./additional-material/SW_Table_01.png)
+
+<p class="sou01">
+Source: Stock and Watson (2020), p. 763-764
+</p>
+
+<br>
+
+</div>
+<!--..........................................................................-->
+
+
+
+<!--..........................................................................-->
+### Task c) 
+
+Related to the `superintendent's question' from the lecture construct the $95\%$ confidence interval for the effect of reducing the student-teacher ratio by $2$.
+
+<hr />
+
+<p class="head03">
+Confidence interval for $\underline{\Delta STR = -2}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# 95% ci bounds for delta x = 2
+ci.95.d2.up <- (ct.rob.01[2,1] + 1.96 * ct.rob.01[2,2]) * (-2) # upper bound
+ci.95.d2.lo <- (ct.rob.01[2,1] - 1.96 * ct.rob.01[2,2]) * (-2) # lower bound
+# results
+cbind(ci.95.d2.lo, ci.95.d2.up)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# 95% ci bounds for delta x = 2
+ci.95.d2.up <- (ct.rob.01[2,1] + 1.96 * ct.rob.01[2,2]) * (-2) # upper bound
+ci.95.d2.lo <- (ct.rob.01[2,1] - 1.96 * ct.rob.01[2,2]) * (-2) # lower bound
+# results
+cbind(ci.95.d2.lo, ci.95.d2.up)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Confidence interval* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Confidence interval for $\underline{\beta_1}$
+</p>
+
+<!-- <span style="text-decoration: underline; font-size: 16pt">Confidence interval for</span>: -->
+
+\begin{align}
+\left[\widehat{\beta}_1 \pm 1.96 * \text{SE}\left(\widehat{\beta}_1\right) \right]
+\end{align}
+
+<hr />
+
+<p class="head02">
+Confidence interval for $\underline{\beta_1 \Delta x}$
+</p>
+
+* Based on the CI for $\beta_1$ above
+* Predicted effect of $\Delta x$ based on the <u>lower</u> CI bound of $\beta_1$ is $\widehat{\beta}_1 - 1.96 * \text{SE}\left(\widehat{\beta}_1\right)$
+* Predicted effect of $\Delta x$ based on the <u>upper</u> CI bound of $\beta_1$ is $\widehat{\beta}_1 + 1.96 * \text{SE}\left(\widehat{\beta}_1\right)$
+
+Thus,
+
+\begin{align}
+\left[\left(\widehat{\beta}_1 \pm 1.96 * \text{SE}\left(\widehat{\beta}_1\right) \right)*\Delta x\right]
+\end{align}
+
+<hr>
+
+<p class="head02">
+Here
+</p>
+
+Use robust standard errors
+
+\begin{align}
+CI &= \left[\left(`r round(ct.rob.01[2,1],3)`\pm 1.96\times `r round(ct.rob.01[2,2],3)`\right) \times \left( -2 \right) \right] \\
+&= \left[`r round(ci.95.d2.lo,3)`,`r round(ci.95.d2.up,3)`\right]
+\end{align}
+
+The $95\%$ confidence interval for the slope coefficient does not include the zero.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+<!--..........................................................................-->
+### Task d) 
+
+Recoding $STR$ into a binary variable for small and large class sizes and replicate the analysis from Chapter 2.8 of the lecture.
+
+```{r,include=FALSE}
+# Recoding of STR into binary variable
+cas.dat$small <- cas.dat$STR < 20
+# Conditional mean
+cas.dat[which(cas.dat$STR == 20),]
+mea.sma <- mean(cas.dat[cas.dat$STR < 20, "score"])
+mea.sma
+mea.lar <- mean(cas.dat[cas.dat$STR >= 20, "score"])
+mea.lar
+# Conditional sd
+sd.sma <- sd(cas.dat[cas.dat$STR < 20, "score"])
+sd.sma
+sd.lar <- sd(cas.dat[cas.dat$STR >= 20, "score"])
+sd.lar
+sd.all <- sd(cas.dat[, "score"])
+# Number of observations
+nn.sma <- length(cas.dat[cas.dat$STR < 20, "score"])
+nn.sma
+nn.lar <- length(cas.dat[cas.dat$STR >= 20, "score"])
+nn.lar
+nn.all <- length(cas.dat[, "score"])
+# Difference in means test
+dim.tst.chk <- (mea.sma-mea.lar)/sqrt(sd.all^2/(nn.all/2) + sd.all^2/(nn.all/2))
+dim.tst.chk
+dim.tst <- (mea.sma-mea.lar)/sqrt(sd.sma^2/(nn.sma) + sd.lar^2/(nn.lar))
+dim.tst
+# Regression with STR as binary variable
+lm.res.02 <- lm(score ~ small, data = cas.dat)
+summary(lm.res.02)
+# Inference for estimated coefficients (based on homoskedasticity)
+lm.res.02.ct.01 <- coeftest(lm.res.02, vcov = vcovHC(lm.res.02, type="const"))
+lm.res.02.ct.01
+# Compare standard errors
+lm.res.02.ct.01[2,"Std. Error"]
+#sqrt(sd.all^2/(nn.sma)+sd.all^2/(nn.lar)) # ???
+#sqrt(sd.sma^2/(nn.sma)+sd.sma^2/(nn.lar)) # ???
+#sqrt(sd.lar^2/(nn.sma)+sd.lar^2/(nn.lar)) # ???
+sd.ave <- nn.lar/nn.all*sd.lar + nn.sma/nn.all*sd.sma
+sqrt(sd.ave^2/(nn.sma) + sd.ave^2/(nn.lar)) # ???
+
+lm.res.02.ct.01[2, "Std. Error"]
+#sd.ave <- sqrt(nn.lar/nn.all*sd.lar^2+nn.sma/nn.all*sd.sma^2)
+sd.ave <- sqrt((nn.lar-1)/(nn.all-2)*sd.lar^2 + (nn.sma-1)/(nn.all-2)*sd.sma^2)
+sqrt(sd.ave^2/(nn.sma) + sd.ave^2/(nn.lar)) # That's it!
+
+# Inference for estimated coefficients (heteroskedasticity robust)
+lm.res.02.ct.02 <- coeftest(lm.res.02, vcov = vcovHC(lm.res.02, type="HC2"))
+lm.res.02.ct.02
+# Compare standard errors
+lm.res.02.ct.02[2,"Std. Error"]
+sqrt(sd.sma^2/(nn.sma) + sd.lar^2/(nn.lar))
+```
+
+<hr />
+
+<p class="head02">
+Binary regression model
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Binary regressors
+</p>
+
+* $X_i=1$ if small class size
+* $X_i=0$ if not small class size, i.e. large class size
+
+<p class="head02">
+Regression model
+</p>
+
+\begin{align}
+Y_i=\beta_0 + \beta_1 X_i + u_i
+\end{align}
+
+<p class="head02">
+Coefficients
+</p>
+
+\begin{align}
+\mathrm{E}\left(Y_i|X_i=0\right)&=\beta_0 \\
+\mathrm{E}\left(Y_i|X_i=1\right)&=\beta_0+\beta_1
+\end{align}
+
+\begin{align}
+\beta_1&=\mathrm{E}\left(Y_i|X_i=1\right)-\mathrm{E}\left(Y_i|X_i=0\right) \\
+&= \text{population difference in group means}
+\end{align}
+
+$\Rightarrow$ Test if difference in means, i.e. $\beta_1$, is different from zero!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+<p class="head02">
+Binary regressors
+</p>
+
+* $X_i=1$ if small class size
+* $X_i=0$ if not small class size, i.e. large class size
+
+<p class="head02">
+Regression model
+</p>
+
+\begin{align}
+Y_i=\beta_0 + \beta_1 X_i + u
+\end{align}
+
+<p class="head02">
+Coefficients
+</p>
+
+\begin{align}
+\mathrm{E}\left(Y_i|X_i=0\right)&=\beta_0 \\
+\mathrm{E}\left(Y_i|X_i=1\right)&=\beta_0+\beta_1
+\end{align}
+
+\begin{align}
+\beta_1&=\mathrm{E}\left(Y_i|X_i=1\right)-\mathrm{E}\left(Y_i|X_i=0\right) \\
+&= \text{population difference in group means}
+\end{align}
+
+$\Rightarrow$ Test if difference in means, i.e. $\beta_1$, is different from zero!
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Group means
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# recoding of STR into binary variable
+cas.dat$small <- round(cas.dat$STR, 2) < 20
+# conditional mean
+mea.sma <- mean(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+mea.sma
+mea.lar <- mean(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+mea.lar
+# conditional sd
+sd.sma <- sd(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+sd.sma
+sd.lar <- sd(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+sd.lar
+sd.all <- sd(cas.dat[, "score"])
+# number of observations
+nn.sma <- length(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+nn.sma
+nn.lar <- length(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+nn.lar
+nn.all <- length(cas.dat[, "score"])
+nn.all
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# recoding of STR into binary variable
+cas.dat$small <- round(cas.dat$STR, 2) < 20
+# conditional mean
+mea.sma <- mean(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+mea.sma
+mea.lar <- mean(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+mea.lar
+# conditional sd
+sd.sma <- sd(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+sd.sma
+sd.lar <- sd(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+sd.lar
+sd.all <- sd(cas.dat[, "score"])
+# number of observations
+nn.sma <- length(cas.dat[round(cas.dat$STR, 2) < 20, "score"])
+nn.sma
+nn.lar <- length(cas.dat[round(cas.dat$STR, 2) >= 20, "score"])
+nn.lar
+nn.all <- length(cas.dat[, "score"])
+nn.all
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Regression results
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# recoding of STR into binary variable
+cas.dat$small <- round(cas.dat$STR,2) < 20
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.01.dd <- lm_ct_fun(score ~ small, data = cas.dat, hc.type = "HC1")
+ct.rob.01.dd <- lm.ct.rob.01.dd$ct
+ct.rob.01.dd
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# recoding of STR into binary variable
+cas.dat$small <- round(cas.dat$STR,2) < 20
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.01.dd <- lm_ct_fun(score ~ small, data = cas.dat, hc.type = "HC1")
+ct.rob.01.dd <- lm.ct.rob.01.dd$ct
+ct.rob.01.dd
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Test for difference in means* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Hypothesis
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{1} = 0 \quad \text{vs.} \\
+H_1&: \quad \beta_{1} \neq 0 \quad \alpha = 5\%
+\end{align}
+
+<p class="head01">
+Decision
+</p>
+
+Use $t-\text{value}$ (based on robust SE's):
+
+* $|t^{act}| = `r round(ct.rob.01.dd[2,3],3)`$
+* $\Rightarrow |t^{act}| > 1.96$
+
+Use $p-\text{value}$ (based on robust SE's):
+
+* $p-\text{value} = `r signif(ct.rob.01.dd[2,4],3)`$
+* $p-\text{value} < 0.05$
+
+$\Rightarrow$ Statistically significant $score$ difference between small and large classes.
+
+Note, Compare results to statistics review video.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+```{r, include=FALSE}
+ct.rob.01
+
+ct.rob.01.dd
+
+# recoding of STR into binary variable
+cas.dat$small <- round(cas.dat$STR,2)<20
+# estimate the model (based on homoskedasticity only se`s)
+lm.res.01.dd.xx <- lm(score ~ small + STR, data = cas.dat)
+# inference for estimated coefficients (heteroskedasticity robust based on White)
+ct.rob.01.dd.xx <- coeftest(lm.res.01.dd.xx, vcov = vcovHC(lm.res.01.dd.xx, type="HC1"))
+ct.rob.01.dd.xx
+```
+
+
+
+
+
+## Task 2 {.tabset .tabset-fade}
+
+<hr />
+
+<p class="head01">
+Earnings and education
+</p>
+
+The data set `cps_01_data.txt` contains information about earnings (in USD) and years of education of 2731 full-time workers.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="col_content">
+
+| Variable  | Description                   | 
+|:----------|:------------------------------| 
+| $ahe$     | Average hourly earnings.      | 
+| $yrseduc$ | Number of years of education. | 
+
+<hr />
+
+For more information see the example of Stock and Watson (2020) on page 193.
+
+</div>
+<!--..........................................................................-->
+
+<hr>
+
+
+
+
+
+<!--..........................................................................-->
+### Preparations
+
+Load data, construct variables and estimation results.
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+cps.dat <- read.table(file = "CPS_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Estimation results No 01
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# estimate linear model
+lm.res.02 <- lm(ahe ~ yrseduc, data = cps.dat)
+# show results
+lm.res.02
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some additional calculations and transformations!)* </button>
+<div class="col_content">
+
+The estimation results below include robust standard errors which are not part of the results from the `lm()` function above.
+
+$\Rightarrow$ See: implementation below!
+
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate linear model
+lm.res.02 <- lm(ahe ~ yrseduc, data = cps.dat)
+```
+
+```{r,include=FALSE}
+library("sandwich")
+# Standard errors based on homoskedasticity
+vcx.ord.02 <- vcov(lm.res.02)
+se.ord.02 <- sqrt(diag(vcx.ord.02))
+se.ord.02
+# Heteroskedasticity-robust standard erros (based on White)
+vcx.rob.02 <- vcovHC(lm.res.02, type="HC0")
+se.rob.02 <- sqrt(diag(vcx.rob.02))
+se.rob.02
+
+vcx.rob.02.x1 <- vcovHC(lm.res.02, type="HC1")
+se.rob.02.x1 <- sqrt(diag(vcx.rob.02.x1))
+se.rob.02.x1
+```
+
+```{r,include=FALSE}
+library("lmtest")
+# Inference for estimated coefficients (based on homoskedasticity)
+lm.res.02.ct.01 <- coeftest(lm.res.02, vcov = vcovHC(lm.res.02, type="const"))
+lm.res.02.ct.01
+# Inference for estimated coefficients (heteroskedasticity robust based on White)
+lm.res.02.ct.02 <- coeftest(lm.res.02, vcov = vcovHC(lm.res.02, type="HC1"))
+lm.res.02.ct.02
+pval.rob.02 <- lm.res.02.ct.02[,4] 
+```
+
+```{r,include=TRUE}
+
+screenreg(list(lm.res.02),
+       override.se = list(se.rob.02),
+       override.pvalues = list(pval.rob.02),
+       caption = "Estimation Results",
+       caption.above = TRUE,
+       label = "Tab02",
+       #stars = numeric(0),
+       custom.model.names = NULL,
+       custom.coef.names = c("intercept","yearseduc"),
+       float.pos = "h",
+       single.row = TRUE,
+       booktabs = TRUE,
+       dcolumn = TRUE,
+       use.packages = FALSE,
+       ci.force = FALSE,
+       digits = 2,
+       include.rsquared = TRUE,
+       include.adjrs = FALSE,
+       include.nobs = FALSE,
+       include.rmse = TRUE)
+```
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task a) 
+
+Load the data set into your statistics software and provide a scatter plot of $ahe$ (average hourly earnings) vs. $yrseduc$ (years of education).
+
+<hr />
+
+<p class="head02">
+Scatter Plot
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cps.dat$yrseduc, cps.dat$ahe,
+     main = "Scatter Plot of Earnings and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Average hourly earnings (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)))
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cps.dat$yrseduc, cps.dat$ahe,
+     main = "Scatter Plot of Earnings and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Average hourly earnings (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)))
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* The values of the variables $ahe$ and $yrseduc$ are restricted to positive values.
+* Furthermore, the variable $yrseduc$ is also restricted to integer values.
+* There seems to be a positive relationship between $yrseduc$ and $ahe$.
+* However, the variance of $ahe$ seems to increase with increasing values of $yrseduc$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+
+Run a regression of $ahe$ on $yrseduc$. State the underlying assumptions of a causal regression. Do you think these assumptions are valid in this case?
+
+<hr />
+
+<p class="head02">
+Estimate linear regression model
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# Estimate linear regression model
+lm.res.02 <- lm(ahe ~ yrseduc, data = cps.dat)
+summary(lm.res.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Estimate linear regression model
+lm.res.02 <- lm(ahe ~ yrseduc, data = cps.dat)
+summary(lm.res.02)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter Plot with Fitted Regression Line
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cps.dat$yrseduc, cps.dat$ahe,
+     main = "Scatter Plot of Earnings and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Average hourly earnings (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)),
+     ylim = c(-12.5, max(cps.dat$ahe)))
+abline(lm.res.02, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatter plot
+plot(cps.dat$yrseduc, cps.dat$ahe,
+     main = "Scatter Plot of Earnings and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Average hourly earnings (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)),
+     ylim = c(-12.5, max(cps.dat$ahe)))
+abline(lm.res.02, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Assumptions and discussion* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Least Squares Assumption for causal inference
+</p>
+
+1. The conditional distribution of $u$ given $X=x$ has mean zero, i.e., $\mathrm{E}\left(u|X=x\right)=0$
+    * Problem: Omitted variables, e.g., quality of education
+    * $\Rightarrow$ See next chapter!
+2. $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$ are i.i.d.
+3. Large outliers in $X$ and/or $Y$ are rare.
+
+<!-- <p class="head01"> -->
+<!-- Homoskedasticity vs. heteroskedasticity -->
+<!-- </p> -->
+
+<!-- * The variance of $ahe$ seems to be larger for large values of $yrseduc$. -->
+<!-- * Homoskedasticity seems to be an invalid assumption. -->
+<!-- * $\Rightarrow$ Use robust SE's! -->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+
+Discuss the usage of heteroskedasticity-robust standard errors.
+
+<hr />
+
+<p class="head02">
+Scatter Plot of Residuals
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# Residuals plot
+plot(cps.dat$yrseduc, lm.res.02$residuals,
+     main = "Scatter Plot of Residuals (ahe) and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Residuals (ahe) (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)))
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# Residuals plot
+plot(cps.dat$yrseduc, lm.res.02$residuals,
+     main = "Scatter Plot of Residuals (ahe) and Years of Education", 
+     xlab = "Years of education (X)",
+     ylab = "Residuals (ahe) (Y)",
+     xlim = c(0, max(cps.dat$yrseduc)))
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note on Implementation* </button>
+<div class="col_content">
+
+* The residuals of a linear model fit, e.g., stored in the object `lm.res` can be extracted using `lm.res$residuals`.
+* The fitted values of a linear model fit, e.g., stored in the object `lm.res` can be extracted using `lm.res$fitted.values`.
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Assumptions and discussion* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <p class="head01"> -->
+<!-- Least Squares Assumption for causal inference -->
+<!-- </p> -->
+
+<!-- 1. The conditional distribution of $u$ given $X=x$ has mean zero, i.e., $\mathrm{E}\left(u|X=x\right)=0$ -->
+<!--     * Problem: Omitted variables, e.g., quality of schooling -->
+<!--     * $\Rightarrow$ See next chapter! -->
+<!-- 2. $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$ are i.i.d. -->
+<!-- 3. Large outliers in $X$ and/or $Y$ are rare. -->
+
+<p class="head02">
+Homoskedasticity vs. heteroskedasticity
+</p>
+
+* The variance of $ahe$ seems to be larger for large values of $yrseduc$.
+* Homoskedasticity seems to be an invalid assumption.
+* $\Rightarrow$ Use robust SE's!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task d) 
+
+Use the appropriate standard errors to to construct a $99\%$ confidence interval for the slope coefficient.
+
+<hr />
+
+<p class="head03">
+Inference based on ordinary SE's
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function lm_ct_fun (here, using ordinary ses)
+lm.ct.ord.02 <- lm_ct_fun(ahe ~ yrseduc, data = cps.dat, hc.type = "const")
+ct.ord.02 <- lm.ct.ord.02$ct
+ct.ord.02
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function lm_ct_fun (here, using ordinary ses)
+lm.ct.ord.02 <- lm_ct_fun(ahe ~ yrseduc, data = cps.dat, hc.type = "const")
+ct.ord.02 <- lm.ct.ord.02$ct
+ct.ord.02
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Inference based on robust SE's (w.r.t. heteroskedasticity) 
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.02 <- lm_ct_fun(ahe ~ yrseduc, data = cps.dat, hc.type = "HC1")
+ct.rob.02 <- lm.ct.rob.02$ct
+ct.rob.02
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function lm_ct_fun (here, using robust ses)
+lm.ct.rob.02 <- lm_ct_fun(ahe ~ yrseduc, data = cps.dat, hc.type = "HC1")
+ct.rob.02 <- lm.ct.rob.02$ct
+ct.rob.02
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Confidence interval based on ordinary SE's
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# 95% ci bounds based on homoskedasticity
+ci.99.up.ord.02 <- ct.ord.02[,1] + 2.58*ct.ord.02[,2] # upper bound
+ci.99.lo.ord.02 <- ct.ord.02[,1] - 2.58*ct.ord.02[,2] # lower bound
+# results
+cbind(ci.99.lo.ord.02,ci.99.up.ord.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# 95% ci bounds based on homoskedasticity
+ci.99.up.ord.02 <- ct.ord.02[,1] + 2.58*ct.ord.02[,2] # upper bound
+ci.99.lo.ord.02 <- ct.ord.02[,1] - 2.58*ct.ord.02[,2] # lower bound
+# results
+cbind(ci.99.lo.ord.02,ci.99.up.ord.02)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Confidence interval based on robust SE's (w.r.t. heteroskedasticity)
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# 95% ci bounds based on heteroskedasticity
+ci.99.up.rob.02 <- ct.rob.02[,1] + 2.58*ct.rob.02[,2] # upper bound
+ci.99.lo.rob.02 <- ct.rob.02[,1] - 2.58*ct.rob.02[,2] # lower bound
+# results
+cbind(ci.99.lo.rob.02,ci.99.up.rob.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# 95% ci bounds based on heteroskedasticity
+ci.99.up.rob.02 <- ct.rob.02[,1] + 2.58*ct.rob.02[,2] # upper bound
+ci.99.lo.rob.02 <- ct.rob.02[,1] - 2.58*ct.rob.02[,2] # lower bound
+# results
+cbind(ci.99.lo.rob.02,ci.99.up.rob.02)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Result and interpretation* </button>
+<div class="col_content">
+
+```{r, include=FALSE}
+ci.upp <- round(ct.rob.02[2,1]+2.58*ct.rob.02[2,2],3)
+ci.low <- round(ct.rob.02[2,1]-2.58*ct.rob.02[2,2],3)
+ci.upp
+ci.low
+```
+
+<div style="color: red" class="showSol01">
+
+Use robust standard errors
+
+\begin{align}
+CI &= \left[\widehat{\beta}_1\pm 2.58\times SE\left(\widehat{\beta}_1\right)\right] \\
+&= \left[`r round(ct.rob.02[2,1],3)`\pm 2.58\times `r round(ct.rob.02[2,2],3)`\right] \\
+&= \left[`r round(ci.low,3)`,`r round(ci.upp,3)`\right]
+\end{align}
+
+The $99\%$ confidence interval for the slope coefficient does not include the zero.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task e) {.tabset .tabset-fade}
+
+Test if the coefficient of $yrseduc$ is significantly different than 2 ($\alpha=0.05$).
+
+<hr />
+
+<p class="head03">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Statement of hypothesis* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+General (for slope parameter)
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{1} = \beta_{1,0} \quad \text{vs.} \\
+H_1&: \quad \beta_{1} \neq \beta_{1,0} \quad \alpha = 5\%
+\end{align}
+
+<hr />
+
+<p class="head02">
+Here
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{yrseduc} = 2 \quad \text{vs.} \\
+H_1&: \quad \beta_{yrseduc} \neq 2 \quad \alpha = 5\%
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Calculation of test statistic* </button>
+<div class="col_content">
+
+```{r,include=FALSE}
+tes.sta.val.01 <- (round(ct.rob.02[2,1],3)-2)/round(ct.rob.02[2,2],3)
+```
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+t^{act} &= \frac{\widehat{\beta}_{yrseduc}^{act} - 2}{SE\left(\widehat{\beta}_{yrseduc}\right)} \\
+t^{act} &= \frac{`r round(ct.rob.02[2,1],3)` - 2}{`r round(ct.rob.02[2,2],3)`} \\
+t^{act} &= `r round(tes.sta.val.01,3)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Conclusion based on test statistic* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* $|t^{act}| > 1.96$
+* $H_0$ can be rejected at 5\% significance level.
+* Note: Rejection for $\left(\alpha=0.01\right)$ as $|t^{act}| > 2.58$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *And/or calculation of $p$-value of test statistic* </button>
+<div class="col_content">
+
+```{r,include=FALSE}
+qnorm(0.05)
+pval.01 <- 2*pnorm(-abs(round(tes.sta.val.01,3)))
+pval.01
+# pval.01 <- 2*0.0778
+# pval.01
+```
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+p-\text{value} &= 2*\Phi\left(-|t^{act}|\right) \\
+&= 2*\Phi\left(`r -abs(round(tes.sta.val.01,3))`\right) \\
+&= 0.0024
+\end{align}
+
+<!-- &= `r signif(pval.01,3)` -->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *And/or conclusion based on $p$-value* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<hr />
+
+<p class="head02">
+Conclusion
+</p>
+
+* $p\text{-value}<0.01$
+* $H_0$ can be rejected at 1\% and thus, also at 5\% significance level.
+
+<hr />
+
+<p class="head02">
+Definition $p$-value
+</p>
+
+* The p-value is the probability of observing a value of $\widehat{\beta}$ at least as different from $\beta_{1,0}$ as the estimate actually computed $\left(\widehat{\beta}^{act}_1\right)$, assuming that the null hypothesis is correct.
+* Type I error, i.e. rejecting $H_0$ even if it is true.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *An Illustration of the $p$-value* </button>
+<div class="cod_content">
+
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+ill_hyp_tes_fun(t.act = 3.67, test = "two.sid")
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+CDF Standard Normal Distribution
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Table of Stock and Watson (2020)* </button>
+<div class="col_content">
+
+![](./additional-material/SW_Table_01.png)
+
+<p class="sou01">
+Source: Stock and Watson (2020), p. 763-764
+</p>
+
+<br>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!-- <hr /> -->
+
+<!-- ### Literature -->
+
+<!-- <div id="refs"></div> -->
+
+<!--..........................................................................-->
+# 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start* of *Practical Class*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none"; // type "block" for show or "none" (default) for exclude
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block"; // type "block" (default) for show or "none" for exclude
+}
+
+</script>
+
+````

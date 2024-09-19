@@ -1294,65 +1294,18 @@ Class</em></a>
 
 <script>
 
-// swith from "bloc" to "none"
-
 // Hide all solutions (by default)
 var i, Sol01;
 Sol01 = document.getElementsByClassName("showSol01");
 for (i = 0; i < Sol01.length; i++) {
-  Sol01[i].style.display = "none";
+  Sol01[i].style.display = "none"; // type "block" for show or "none" (default) for exclude
 }
   
 var i, NoSol01;
 NoSol01 = document.getElementsByClassName("noSol01");
 for (i = 0; i < NoSol01.length; i++) {
-  NoSol01[i].style.display = "block";
+  NoSol01[i].style.display = "block"; // type "block" (default) for show or "none" for exclude
 }
-
-// === OLD === //
-
-// Hide all solutions (on cklick)
-function hideAllSolutions01() {
-
-  var i, Sol01;
-  Sol01 = document.getElementsByClassName("showSol01");
-  for (i = 0; i < Sol01.length; i++) {
-    Sol01[i].style.display = "none";
-  }
-  
-  var i, NoSol01;
-  NoSol01 = document.getElementsByClassName("noSol01");
-  for (i = 0; i < NoSol01.length; i++) {
-    NoSol01[i].style.display = "block";
-  }
-  
-}
-
-// Show all solutions (on click)
-function showAllSolutions01() {
-
-  var i, Sol01;
-  Sol01 = document.getElementsByClassName("showSol01");
-  for (i = 0; i < Sol01.length; i++) {
-    Sol01[i].style.display = "block";
-  }
-  
-  var i, NoSol01;
-  NoSol01 = document.getElementsByClassName("noSol01");
-  for (i = 0; i < NoSol01.length; i++) {
-    NoSol01[i].style.display = "none";
-  }
-  
-}
-
-// Hide exclude
-var exc;
-exc = document.getElementById("Exc01");
-exc.style.display = "none";
-
-var exc;
-exc = document.getElementById("Exc02");
-exc.style.display = "none";
 
 </script>
 
