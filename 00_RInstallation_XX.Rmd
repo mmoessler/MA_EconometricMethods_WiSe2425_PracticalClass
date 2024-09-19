@@ -1,0 +1,140 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+bibliography: [./assets/Ma_EconometricMethods_Literature.bib]
+biblio-style: apalike
+link-citations: no
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<hr />
+
+# What is <span class="R">R</span>?
+
+<div style="margin-left: 0pt">
+
+<span class="R">R</span> is a powerful programming language and software for *statistical computing and graphics*.
+
+* <span class="R">R</span> is freely available under the "GNU General Public License".
+* <span class="R">R</span> project homepage: [https://www.r-project.org/](https://www.r-project.org/).
+
+According to @PaarschGolyaev2016Gentle, <span class="R">R</span> is the "lingua franca" among statisticians.
+
+An introduction into <span class="R">R</span> can be found in, e.g.,  @Kabacoff2015R or @VenablesSmith2020Introduction.
+
+</div>
+
+
+
+<!--..........................................................................-->
+<hr />
+
+# What is <span class="R">RStudio</span>?
+
+<div style="margin-left: 0pt">
+
+<span class="R">R</span> has no (native) *GUI* (Graphical User Interface) or *IDE* (Integrated Development Environment).
+
+Instead, *GUIs/IDEs* are provided by third-party software. One of the most popular and free of charge *GUI/IDE* for <span class="R">R</span> is <span class="R">RStudio</span>.
+
+<span class="R">RStudio</span> is a front-end application for developing <span class="R">R</span> code, and freely available under the "GNU Affero General Public License".
+
+<span class="R">RStudio</span> is not necessary but it makes it easier to use <span class="R">R</span>. Thus, we recommend to use <span class="R">RStudio</span>.
+
+<!-- However, <span class="R">RStudio</span> is based on <span class="R">R</span> so you have to install <span class="R">R</span> first (see below)! -->
+
+</div>
+
+
+
+<!--..........................................................................-->
+<hr />
+
+# Installation of <span class="R">R</span> and <span class="R">RStudio</span>
+
+<!--..........................................................................-->
+<!-- <hr /> -->
+
+<p class="head01">
+Step 1: Installation of <span class="R">R</span>
+</p>
+
+<!-- <span class="R">R</span> is a programming language and software for statistical computing and graphics and freely available under the "GNU General Public License". -->
+
+<!--..........................................................................-->
+<!-- <p class="head02"> -->
+<!-- Steps -->
+<!-- </p> -->
+
+1. Go to [CRAN Mirrors](https://cran.r-project.org/mirrors.html)
+2. Choose a mirror located close to your internet connection, e.g., "GWDG Göttingen".
+3. Download and install <span class="R">R</span> for your operating system, e.g., "Windows".
+
+<!--..........................................................................-->
+<!-- <hr /> -->
+
+<p class="head01">
+Step 2: Installation of <span class="R">RStudio</span>
+</p>
+
+<!-- <span class="R">RStudio</span> is a so-called "integrated development environment" (IDE), i.e., a front-end application for developing R code, and freely available under the "GNU Affero General Public License". -->
+
+<!-- <span class="R">RStudio</span> is not necessary to use <span class="R">R</span> but it makes it easier. Thus, we recommend to use <span class="R">RStudio</span>. However, <span class="R">RStudio</span> is based on <span class="R">R</span> so you have to install <span class="R">R</span> first (see above)! -->
+
+<!--..........................................................................-->
+<!-- <p class="head02"> -->
+<!-- Steps -->
+<!-- </p> -->
+
+1. Go to [download <span class="R">RStudio</span>](https://posit.co/download/rstudio-desktop/)
+2. Choose "<span class="R">RStudio</span> Desktop".
+3. Download and install <span class="R">RStudio</span> for your operating system, e.g., "Windows".
+
+*Note, <span class="R">RStudio</span> is based on <span class="R">R</span> so you have to install <span class="R">R</span> first (see above)!*
+
+
+<!--..........................................................................-->
+<hr />
+
+# Literature
+
+<div id="refs"></div>
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start* of *Practical Class*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
