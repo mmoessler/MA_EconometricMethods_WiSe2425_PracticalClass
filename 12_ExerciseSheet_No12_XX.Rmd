@@ -1,0 +1,1896 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1558777_download&client_id=UHOH"
+  dat_nam_01: "us_macro_data"
+  dat_link_02: "https://ilias.uni-hohenheim.de/goto.php?target=file_1561369_download&client_id=UHOH"
+  dat_nam_02: "us_urate_data"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+library(knitr)
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.height = 8,
+  fig.width = 10,
+  fig.align = 'center')
+options(scipen=1)
+options(width=9999)
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/r_helper_functions.R")
+# source("./r-scripts/texreg_extract_fun_02.R")
+source("./r-scripts/texreg_extract_fun_03_df.R")
+source("./r-scripts/ur_df_fun.R")
+
+# 4) load data
+macro.dat <- read.table("./data-sets/us_macro_data.txt",
+                        header = TRUE,
+                        sep = ",",
+                        colClasses = c("character","numeric","numeric","numeric"))
+
+# load data
+urate.dat <- read.table(file = "./data-sets/us_urate_data.txt",
+                        header = TRUE,
+                        sep = ",",
+                        colClasses = c("character","numeric"))
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 12 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Regression Analysis of Time Series Data (Part 2)
+</p>
+
+<hr />
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data sets ``r params$dat_nam_01`` and ``r params$dat_nam_02`` from <span class="R">ILIAS</span> directly or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+<p class="down01">
+<a href="`r params$dat_link_02`">Download ``r params$dat_nam_02``</a>
+</p>
+
+Save the data set into a (working) directory of your choice.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+
+
+
+<!-- <hr /> -->
+
+<!--..........................................................................-->
+## Task 1 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!-- <hr /> -->
+
+<p class="head01">
+US Real GDP and trends
+</p>
+
+<hr>
+
+We return to the analysis of US Real Gross Domestic Product (GDP). For this we use the data set `us_macro_data.txt` containing quarterly US macro data from 1955:Q2 - 2017:Q4 with the variables described in Table 1 of the exercise sheet and depicted in Figure 1 of the exercise sheet. 
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Variable Description* </button>
+<div class="content01">
+
+| Variable  | Description                               | 
+|-----------|-------------------------------------------| 
+| $GDP$     | Real GDP in Billions of \$2009            | 
+| $GDPGR$   | Annualized real GDP growth                | 
+| $TSpread$ | Spread between 10Y and 3M treasury yields | 
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible01"> *Show Variable Plots* </button> -->
+<!-- <div class="content01"> -->
+
+```{r, include=FALSE}
+
+# load data
+macro.dat <- read.table(file = "./data-sets/us_macro_data.txt",
+                      header = TRUE,
+                      sep = ",")
+
+# Transform variable
+macro.ts <- ts(macro.dat[,-1], frequency = 4, start = c(1955, 2), end = c(2017, 4)) # I omit the date column 1 here
+# head(macro.ts)
+# tail(macro.ts)
+
+gdp.grw.ts <- ts(macro.dat$GDPGR, frequency = 4, start = c(1955, 2), end = c(2017, 4))
+# head(gdp.grw.ts)
+# tail(gdp.grw.ts)
+
+gdp.lev.ts <- ts(macro.dat$GDP, frequency = 4, start = c(1955, 2), end = c(2017, 4))
+# head(gdp.lev.ts)
+# tail(gdp.lev.ts)
+
+gdp.lev <- macro.dat$GDP
+TT <- length(gdp.lev)
+
+tax <- seq(as.Date("1955/4/1"), by = "quarter", length.out = TT)
+# head(tax)
+# tail(tax)
+
+par(mfrow=c(1,2),
+    mar=c(3,2,2,2))
+    # margins of bottom, left, top, and right
+
+plot(tax, macro.dat$GDP, type="l", xlab="", ylab="", main="US GDP in levels")
+plot(tax, log(macro.dat$GDP), type="l", xlab="", ylab="", main="US GDP in logs")
+
+# original margin
+org.mar <- c(5.1, 4.1, 4.1, 2.1)
+
+```
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible01"> *Show Estimation Results No 01* </button> -->
+<!-- <div class="content01"> -->
+
+```{r, include=FALSE}
+
+library(urca)
+
+gdp.lev.ts.01 <- window(gdp.lev.ts, start = c(1961,2), end = c(2017,4))
+gdp.lev.ts.01 <- window(gdp.lev.ts, start = c(1961,0), end = c(2017,4))
+
+zt <- log(gdp.lev.ts.01)
+  
+# Calse 1
+zt.df.01 <- ur.df(zt,type=c("none"),lags=0)
+# summary(zt.df.01)
+# Case 2
+zt.df.02 <- ur.df(zt,type=c("drift"),lags=0)
+# summary(zt.df.02)
+# Case 3
+zt.df.03 <- ur.df(zt,type=c("trend"),lags=0)
+# summary(zt.df.03)
+
+# Calse 1
+zt.df.01.edit <- ur.df.edit(zt,type=c("none"),lags=0)
+zt.df.01.tes.reg <- zt.df.01.edit$result
+# Calse 2
+zt.df.02.edit <- ur.df.edit(zt,type=c("drift"),lags=0)
+zt.df.02.tes.reg <- zt.df.02.edit$result
+# Calse 3
+zt.df.03.edit <- ur.df.edit(zt,type=c("trend"),lags=0)
+zt.df.03.tes.reg <- zt.df.03.edit$result
+
+screenreg(list(zt.df.02.tes.reg,zt.df.03.tes.reg),
+       custom.model.names = c("Case 2","Case 3"),
+       custom.coef.names = c("constant","$y_{t-1}$","trend"),
+       # stars = c(0.01,0.05,0.10),
+       stars = NULL,
+       caption.above = TRUE,
+       # caption = c("Task 1: DF estimation outputs for three Cases (1961-Q2 - 2017-Q4)"),
+       caption = c("DF regression outputs for 2 cases of the US log GDP time series"),
+       label=c("Tab02"),
+       float.pos=c("H"),
+       single.row = FALSE, digits = 4,
+       booktabs = TRUE, dcolumn = TRUE, use.packages = FALSE,
+       include.rmse = FALSE, scalebox = 1)
+
+```
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible01"> *Show Estimation Results No 02* </button> -->
+<!-- <div class="content01"> -->
+
+```{r, include=FALSE}
+
+# ADF p=4
+zt.df.04.edit <- ur.df.edit(zt, type = c("trend"), lags = 4, selectlags = "AIC")
+
+zt.df.01.tes.reg <- zt.df.04.edit$lm.res[[1]]
+# zt.df.01.tes.reg
+
+zt.df.02.tes.reg <- zt.df.04.edit$lm.res[[2]]
+# zt.df.02.tes.reg
+
+zt.df.03.tes.reg <- zt.df.04.edit$lm.res[[3]]
+# zt.df.03.tes.reg
+
+zt.df.04.tes.reg <- zt.df.04.edit$lm.res[[4]]
+# zt.df.04.tes.reg
+
+zt.df.05.tes.reg <- zt.df.04.edit$lm.res[[5]]
+# zt.df.05.tes.reg
+
+names(zt.df.02.tes.reg$coefficients) <- c("(Intercept)", "z.lag.1", "tt", "z.diff.lag1")
+
+screenreg(list(zt.df.01.tes.reg,zt.df.02.tes.reg,zt.df.03.tes.reg,zt.df.04.tes.reg,zt.df.05.tes.reg),
+          custom.model.names = c("Spec 1","Spec 2","Spec 3","Spec 4", "Spec 5"),
+          custom.coef.names = c("constant", "$y_{t-1}$","trend","$\\Delta y_{t-1}$","$\\Delta y_{t-2}$","$\\Delta y_{t-3}$","$\\Delta y_{t-4}$"),
+          # stars = c(0.01,0.05,0.10),
+          stars = NULL,
+          caption.above = TRUE,
+          # caption = c("DF estimation outputs for five specifications (1962-Q2 - 2017-Q4)"),
+          caption = c("ADF regression outputs for 5 model specification of the US log GDP time series"),
+          label=c("Tab03"),
+          float.pos=c("H"),
+          single.row = FALSE, digits = 4,
+          booktabs = TRUE, dcolumn = TRUE, use.packages = FALSE,
+          include.rmse = FALSE, scalebox = 0.75)
+
+```
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible01"> *Show Critical Values* </button> -->
+<!-- <div class="content01"> -->
+
+```{r, include=FALSE}
+
+# Case 2
+zt.df.02 <- ur.df(zt,type=c("drift"),lags=0)
+# Case 3
+zt.df.03 <- ur.df(zt,type=c("trend"),lags=0)
+
+zt.df.tes.mat <- rbind(cbind(t(zt.df.02@cval[1,])),
+                       cbind(t(zt.df.03@cval[1,])))
+rownames(zt.df.tes.mat) <- c("Case 2 (const)","Case 3 (trend)")
+colnames(zt.df.tes.mat) <- c("1 pct","5 pct","10 pct")
+
+```
+
+```{r,include=FALSE,results='asis'}
+
+zt.df.tes.mat %>%
+  kable("html",booktabs=T,escape=F,align=c("c","c","c"),digits = c(2,2,2)) %>%
+  #add_header_above(c(" ", " " = 2, "Percentile" = 7)) %>%
+  kable_styling(latex_options="hold_position") %>%
+  row_spec(0,align="c")
+
+```
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### Task a) 
+<!--..........................................................................-->
+
+Briefly describe the time series plot of GDP in levels and logs in Figure 1 on the exercise sheet.
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE, eval=FALSE}
+# use absolute or relative path to load data
+macro.dat <- read.table("us_macro_data.txt",
+                        header = TRUE,
+                        sep = ",",
+                        colClasses = c("character","numeric","numeric","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Prepare data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# extract gdp (levels)
+gdp.lev <- macro.dat$GDP
+# extract date
+tax <- as.Date(macro.dat$DATE)
+# extract gdp (levels) as time series
+gdp.lev.ts <- ts(macro.dat$GDP, frequency = 4, start = c(1955, 2), end = c(2017, 4))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Plot series
+</p>
+
+```{r, include=FALSE}
+
+par(mfrow = c(1,1),
+    mar = org.mar)
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Time series plot of GDP (levels)
+plot(tax, macro.dat$GDP,
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US GDP in levels")
+# Time series plot of GDP (logs)
+plot(tax, log(macro.dat$GDP),
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US GDP in logs")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Time series plot of GDP (levels)
+plot(tax, macro.dat$GDP,
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US GDP in levels")
+# Time series plot of GDP (logs)
+plot(tax, log(macro.dat$GDP),
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US GDP in logs")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+* There seems to be an upward trend in both series.
+* Stochastic and/or deterministic trend?
+* Why do we care? Different detrending strategies!
+  * <u>Stochastic trend</u>: Take first difference for detrending
+  * <u>Deterministic trend</u>: Regress on a time trend for detrending
+
+<!-- * Levels vs. log series -->
+<!--   * linear growth in logs until GFC -->
+<!--   * exponential growth in levels until GFC -->
+<!--   * <u>Remember</u>: A constant growth in logs implies exponential growth in levels   -->
+  
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+<!--..........................................................................-->
+
+Test for a unit root in the log GDP series using the Dickey Fuller (DF) test. Use the estimation results of the appropriate specification depicted in Table 3 on the exercise sheet and the critical values depicted in Table 4 on the exercise sheet. Interpret the results.
+
+<hr />
+
+<p class="head02">
+Extract time window for test
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# extract gdp (levels) as time series
+gdp.lev.ts.01 <- window(gdp.lev.ts, start = c(1961,0), end = c(2017,4))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification in general
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *General* </button>
+<div class="content01">
+
+\begin{align*}
+Y_t &= \beta_0 + \beta_1 Y_{t-1} + u_t \quad \quad \quad |-Y_{t-1} \\
+\Delta Y_t &= \beta_0 + \left(\beta_1-1\right) Y_{t-1} + u_t \\
+\end{align*}
+
+$\Rightarrow$ Test whether $\beta_1=1$ or $\delta\equiv\left(\beta_1-1\right)=0$
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: Case 2
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+<p class="head03">
+Estimated regression
+</p>
+
+\begin{align*}
+\Delta Y_t = \beta_0 + \delta Y_{t-1} + u_t
+\end{align*}
+
+<p class="head03">
+True process
+</p>
+
+\begin{align*}
+\Delta Y_t = u_t
+\end{align*}
+
+<p class="head03">
+Assumption
+</p>
+
+\begin{align*}
+u_t \sim iid\left(0,\sigma^2\right)
+\end{align*}
+
+<!--
+Hypothesis
+
+\begin{align*}
+H_0 &: \theta = 0 \\
+H_1 &: \theta \neq 0
+\end{align*}
+-->
+
+<!-- phi1:
+\begin{align*}
+H_0 &: \theta = \delta = 0 \\
+H_1 &: \theta \neq 0
+\end{align*}
+-->
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Case 2
+df.gdp.02 <- ur.df(y = log(gdp.lev.ts.01), type = "drift", lags = 0)
+summary(df.gdp.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Case 2
+df.gdp.02 <- ur.df(y = log(gdp.lev.ts.01), type = "drift", lags = 0)
+summary(df.gdp.02)
+```
+</div>
+<!--..........................................................................-->
+
+```{r}
+
+# Case 1: ICs
+lag_len_crit_fun(df.gdp.02@testreg)
+
+```
+
+<hr />
+
+<p class="head02">
+Specification and estimation: Case 3
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+<p class="head03">
+Estimated regression
+</p>
+
+\begin{align*}
+\Delta A_t = \beta_1 + \delta y_{t-1} + \mu t + u_t
+\end{align*}
+
+<p class="head03">
+True process
+</p>
+
+\begin{align*}
+\Delta Y_t = \beta_1 + u_t
+\end{align*}
+
+<p class="head03">
+Assumption
+</p>
+
+\begin{align*}
+u_t \sim iid\left(0,\sigma^2\right)
+\end{align*}
+
+<!--
+beta = mu (here!)
+
+Hypothesis
+
+\begin{align*}
+H_0 &: \theta = 0 \\
+H_1 &: \theta \neq 0
+\end{align*}
+-->
+
+<!-- phi2:
+\begin{align*}
+H_0 &: \theta = \delta = \beta = 0 \\
+H_1 &: \neq 0
+\end{align*}
+-->
+
+<!-- phi3:
+\begin{align*}
+H_0 &: \theta = \beta = 0 \\
+H_1 &: \neq 0
+\end{align*}
+-->
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Case 3
+df.gdp.03 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 0)
+summary(df.gdp.03)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Case 3
+df.gdp.03 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 0)
+summary(df.gdp.03)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible02"> *Choose specification* </button> -->
+<!-- <div class="content01"> -->
+
+<!-- <div class="showSol01"> -->
+
+<!-- * General principle: Fit a specification that is a plausible description of the data under both, -->
+<!--   + the null and... -->
+<!--   + the alternative hypothesis. -->
+<!-- * There seems to an upward trending behavior. It is either... -->
+<!--   + a random walk with drift $\left(\delta=0, \beta_1\neq0\right)$ or... -->
+<!--   + a random walk with drift and time trend $\left(\delta=0, \beta_1>0, \mu>0\right)$ or... -->
+<!--   + a trend stationary process $\left(\delta < 0, \mu>0\right)$. -->
+<!-- * $\Rightarrow$ Choose case 3 -->
+
+<!-- </div> -->
+
+<!-- <div class="noSol01"> -->
+
+<!-- *Add your Interpretation here!* -->
+
+<!-- </div> -->
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Draw conclusion* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Case
+</p>
+
+* <u>General principle</u>: Fit a specification that is a plausible description of the data under both,
+  + the null and...
+  + the alternative hypothesis.
+* There seems to an upward trending behavior. This can be due to...
+  + a random walk with drift $\left(\delta=0, \beta_1\neq0\right)$, or...
+  + a random walk with drift and a time trend $\left(\delta=0, \beta_1>0, \mu>0\right)$, or...
+  + a trend stationary process $\left(\delta < 0, \mu>0\right)$.
+* $\Rightarrow$ Choose case 3
+
+<hr />
+
+<p class="head03">
+Test statistic
+</p>
+
+\begin{align*}
+t_T &= \frac{-0.0168 - 0}{0.0096} \\
+t_T &= -1.75
+\end{align*}
+
+<hr />
+
+<p class="head03">
+Conclusion
+</p>
+
+* Under the $H_0$ of a unit root, $t_T$ is not asymptotically normal distributed.
+* Instead, $t_T$  is non-standard distributed whereas the critical values for this sample size are given in Table 2 on the exercise sheet
+* Test statistic $\left(-1.75\right)$ is larger than the 10% critical value $\left(-3.13\right)$ for case 3.
+* $\Rightarrow$ We cannot reject the $H_0$ that there is a unit root in the log GDP series.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+<!--..........................................................................-->
+
+Test for a unit root in the log GDP series using the augmented Dickey Fuller (ADF) test. Use the estimation results of the appropriate specification depicted in Table 4 on the exercise sheet and the critical values depicted in Table 2 of the exercise sheet. Interpret the results.
+
+<hr />
+
+<p class="head02">
+Diagnostics of DF specification
+</p>
+
+<!--
+<hr />
+
+<p class="head03">
+Correlogram
+</p>
+-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Get residuals 
+df.gdp.03.res <- df.gdp.03@res
+# Acf/pac of residuals
+par(mfrow=c(1,1))
+Acf(df.gdp.03.res, lag.max = 10, type = "correlation", plot = T, main = "")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Get residuals 
+df.gdp.03.res <- df.gdp.03@res
+# Acf/pac of residuals
+par(mfrow=c(1,1))
+Acf(df.gdp.03.res, lag.max = 10, type = "correlation", plot = T, main = "")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification in general
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *General* </button>
+<div class="content01">
+
+<p class="head03">
+General (Case 3 here)
+</p>
+
+\begin{align*}
+\Delta Y_t &= \beta_1 + \delta y_{t-1} + \mu t + \sum_{j=1}^{p-1} \gamma_j \Delta Y_{t-j} + u_t
+\end{align*}
+
+<p class="head03">
+Assumption
+</p>
+
+\begin{align*}
+u_t \sim iid\left(0,\sigma^2\right)
+\end{align*}
+
+<!--
+Hypothesis
+
+\begin{align*}
+H_0 &: \theta = \beta = 0 \\
+H_1 &: \theta \neq 0
+\end{align*}
+-->
+
+<!--
+\begin{align*}
+H_0 &: \theta = \beta = 0 \\
+H_1 &: \theta \neq 0
+\end{align*}
+-->
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 1 lag
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+\begin{align*}
+\Delta Y_t &= \beta_1 + \delta Y_{t-1} + \mu t + \gamma_1 \Delta Y_{t-1} + u_t
+\end{align*}
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 3, lag 1
+adf.gdp.01 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 1)
+summary(adf.gdp.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 3, lag 1
+adf.gdp.01 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 1)
+summary(adf.gdp.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 2 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+\begin{align*}
+\Delta Y_t &= \beta_1 + \delta Y_{t-1} + \mu t + \gamma_1 \Delta Y_{t-1} + \gamma_2 \Delta Y_{t-2} + u_t
+\end{align*}
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 3, lag 2
+adf.gdp.02 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 2)
+summary(adf.gdp.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 3, lag 2
+adf.gdp.02 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 2)
+summary(adf.gdp.02)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 3 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+\begin{align*}
+\Delta Y_t &= \beta_1 + \delta Y_{t-1} + \mu t + \gamma_1 \Delta Y_{t-1} + \gamma_2 \Delta Y_{t-2} + \gamma_3 \Delta Y_{t-3} + u_t
+\end{align*}
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 3, lag 3
+adf.gdp.03 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 3)
+summary(adf.gdp.03)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 3, lag 3
+adf.gdp.03 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 3)
+summary(adf.gdp.03)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 4 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="content01">
+
+\begin{align*}
+\Delta Y_t &= \beta_1 + \delta Y_{t-1} + \mu t + \gamma_1 \Delta Y_{t-1} + \gamma_2 \Delta Y_{t-2} + \gamma_3 \Delta Y_{t-3} + \gamma_4 \Delta Y_{t-4} + u_t
+\end{align*}
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 3, lag 4
+adf.gdp.04 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 4)
+summary(adf.gdp.04)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 3, lag 4
+adf.gdp.04 <- ur.df(y = log(gdp.lev.ts.01), type = "trend", lags = 4)
+summary(adf.gdp.04)
+```
+</div>
+<!--..........................................................................-->
+
+```{r}
+
+# ICs
+lag_len_crit_fun(adf.gdp.04@testreg)
+
+```
+
+<hr />
+
+<p class="head02">
+Information criteria
+</p>
+
+For the lag length selection information criteria such as $AIC$ and $BIC$ can be used.
+
+For this it is important to use the same observations for each specification, i.e., for $p=1$,  $p=2$,... and $p=4$ above.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Call provided urca_ur_df_fun function
+adf.gdp.res <- urca_ur_df_fun(y = log(gdp.lev.ts.01), type = c("trend"), lags = 4, selectlags = "AIC")
+# Collect information criteria
+cri.res <- cbind(rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$t))
+# Name results
+rownames(cri.res) <- c("AIC", "BIC", "T")
+colnames(cri.res) <- c("p=0", "p=1", "p=2", "p=3", "p=4")
+# Print results
+cri.res
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Call provided urca_ur_df_fun function
+adf.gdp.res <- urca_ur_df_fun(y = log(gdp.lev.ts.01), type = c("trend"), lags = 4, selectlags = "AIC")
+# Collect information criteria
+cri.res <- cbind(rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[1]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[2]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[3]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[4]])$t),
+                 rbind(lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$AIC, lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$BIC, lag_len_crit_fun(adf.gdp.res$lm.res[[5]])$t))
+# Name results
+rownames(cri.res) <- c("AIC", "BIC", "T")
+colnames(cri.res) <- c("p=0", "p=1", "p=2", "p=3", "p=4")
+# Print results
+cri.res
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Choose specification
+</p>
+
+* $AIC$ as well as $BIC$ suggest to include two lagged differences.
+
+<p class="head03">
+Test statistic
+</p>
+
+\begin{align*}
+t_T &= \frac{-0.0203 - 0}{0.0094} \\
+t_T &= -2.160
+\end{align*}
+
+<hr />
+
+<p class="head03">
+Conclusion
+</p>
+
+* Under the $H_0$ of a unit root, $t_T$ is not asymptotically normal distributed.
+* Instead, $t_T$ is non-standard distributed whereas the critical values for this sample size are given in Table 2 on the exercise sheet.
+* Test statistic $\left(-2.160\right)$ is larger than the 10% critical value $\left(-3.13\right)$ for case 3.
+* $\Rightarrow$ We cannot reject the $H_0$ that there is a unit root in the log GDP series.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--
+-> Lags to short:
+.-> Size distortion: critical values do no represent critical type II error
+.-> Here:
+..-> Positive auto correlation in residuals
+..-> theta to high or critical values to large
+..-> Critical values do not represent 5% but rather 6% 
+-> Lags to long:
+.-> Power distortion
+-->
+
+
+
+
+
+<!--..........................................................................-->
+## Task 2 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!-- <hr /> -->
+
+<p class="head01">
+US unemployment and trends
+</p>
+
+<hr>
+
+We want to analyse US unemployment rate (UR). For this we use the data set `us_urate_data.txt` containing quarterly data from 1960:Q1 - 2013:Q4 for the US unemployment rate. with the time series depicted in Figure 2 on the exercise sheet. 
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Variable Plots* </button>
+<div class="content01">
+
+```{r, include=TRUE}
+
+# load data
+us_macro_quarterly <- read.table(file = "./data-sets/us_urate_data.txt",
+                      header = TRUE,
+                      sep = ",")
+
+# head(us_macro_quarterly)
+
+ura.ts <- ts(us_macro_quarterly$URATE, frequency = 4, start = c(1957, 1), end = c(2013, 4))
+# head(ura.ts)
+# tail(ura.ts)
+TT <- length(ura.ts)
+
+tax <- seq(as.Date("1957-01-01"), by = "quarter", length.out = TT)
+# head(tax)
+# tail(tax)
+
+par(mfrow=c(1,1),
+    mar=c(3,2,2,2))
+    # margins of bottom, left, top, and right
+
+plot(tax, us_macro_quarterly$URATE, type="l", xlab="", ylab="", main="US Unemployment Rate",
+     ylim = c(0, max(us_macro_quarterly$URATE)))
+
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### Task a) 
+<!--..........................................................................-->
+
+Briefly describe the time series plot of the unemployment rate in Figure 2 on the exercise sheet.
+
+<hr />
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+urate.dat <- read.table("us_urate_data.txt",
+                        header = TRUE,
+                        sep = ",",
+                        colClasses = c("character","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Prepare data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# extract urate
+ura <- urate.dat$URATE
+# extract date
+tax <- as.Date(urate.dat$DATE)
+# extract urate as time series
+ur.ts <- ts(urate.dat$URATE, frequency = 4, start = c(1957, 1), end = c(2013, 4))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Plot series
+</p>
+
+```{r, include=FALSE}
+
+par(mfrow = c(1,1),
+    mar = org.mar)
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Time series plot of urate
+plot(tax, urate.dat$URATE,
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US Unemployment Rate")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Time series plot of urate
+plot(tax, urate.dat$URATE,
+     type = "l",
+     xlab = "",
+     ylab = "",
+     main = "US Unemployment Rate")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+* There seems to be no clear upward or downward trend in the series.
+* There seems to be no deterministic trend.
+* There could be still a stochastic trend in the series.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+<!--..........................................................................-->
+
+Test for a unit root in the unemployment rate series using the Dickey Fuller (DF) test. Use the estimation results of the appropriate specification depicted in Table 5 on the exercise sheet and the critical values depicted in Table 2 on the exercise sheet. Interpret the results.
+
+<hr />
+
+<p class="head02">
+Extract time window for test
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# extract urate as time series
+ur.ts.01 <- window(ur.ts, start = c(1960,1), end = c(2013,4))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: Case 2
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Case 2
+df.ura.02 <- ur.df(y = ur.ts.01, type = "drift", lags = 0)
+summary(df.ura.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Case 2
+df.ura.02 <- ur.df(y = ur.ts.01, type = "drift", lags = 0)
+summary(df.ura.02)
+```
+</div>
+<!--..........................................................................-->
+
+```{r}
+
+# Case 1: ICs
+lag_len_crit_fun(df.gdp.02@testreg)
+
+```
+
+<hr />
+
+<p class="head02">
+Specification and estimation: Case 3
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Case 3
+df.ura.03 <- ur.df(y = ur.ts.01, type = "trend", lags = 0)
+summary(df.ura.03)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Case 3
+df.ura.03 <- ur.df(y = ur.ts.01, type = "trend", lags = 0)
+summary(df.ura.03)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<!-- <button type="button" class="collapsible02"> *Choose specification* </button> -->
+<!-- <div class="content01"> -->
+
+<!-- <div class="showSol01"> -->
+
+<!-- * General principle: Fit a specification that is a plausible description of the data under both,... -->
+<!--   + the null and... -->
+<!--   + the alternative hypothesis. -->
+<!-- * There seems to an upward trending behavior. It is either... -->
+<!--   + a random walk with drift $\left(\delta=0, \beta_1\neq0\right)$ or... -->
+<!--   + a random walk with drift and time trend $\left(\delta=0, \beta_1>0, \mu>0\right)$ or... -->
+<!--   + a trend stationary process $\left(\delta < 0, \mu>0\right)$. -->
+<!-- * $\Rightarrow$ Choose case 3 -->
+
+<!-- </div> -->
+
+<!-- <div class="noSol01"> -->
+
+<!-- *Add your Interpretation here!* -->
+
+<!-- </div> -->
+
+<!-- </div> -->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Draw conclusion* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+* Chose Case 2 as the process is either...
+  * a random walk without drift, or...
+  * a stationary process with a constant.
+  * $\Rightarrow$ Choose case 2. 
+* Test statistic $\left(-1.546\right)$ is larger than the 10% critical value $\left(-2.57\right)$ for case 2.
+* $\Rightarrow$ We cannot reject the $H_0$ that there is a unit root in the unemployment series.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+<!--..........................................................................-->
+
+Test for a unit root in the unemployment rate series using the augmented Dickey Fuller (ADF) test. Use the estimation results of the appropriate specification depicted in Table 6 on the exercise sheet and the critical values depicted in Table 2 on the exercise sheet. Interpret the results.
+
+<hr />
+
+<hr />
+
+<p class="head02">
+Diagnostics of DF specification
+</p>
+
+<!--
+<hr />
+
+<p class="head03">
+Correlogram
+</p>
+-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Get residuals 
+df.ura.02.res <- df.ura.03@res
+# Acf/pac of residuals
+par(mfrow=c(1,1))
+Acf(df.ura.02.res, lag.max = 10, type = "correlation", plot = T, main = "")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Get residuals 
+df.ura.02.res <- df.ura.03@res
+# Acf/pac of residuals
+par(mfrow=c(1,1))
+Acf(df.ura.02.res, lag.max = 10, type = "correlation", plot = T, main = "")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 1 lag
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 2, lag 1
+adf.ura.01 <- ur.df(y = ur.ts.01, type = "drift", lags = 1)
+summary(adf.ura.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 2, lag 1
+adf.ura.01 <- ur.df(y = ur.ts.01, type = "drift", lags = 1)
+summary(adf.ura.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 2 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 2, lag 2
+adf.ura.02 <- ur.df(y = ur.ts.01, type = "drift", lags = 2)
+summary(adf.ura.02)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 2, lag 2
+adf.ura.02 <- ur.df(y = ur.ts.01, type = "drift", lags = 2)
+summary(adf.ura.02)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 3 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 2, lag 3
+adf.ura.03 <- ur.df(y = ur.ts.01, type = "drift", lags = 3)
+summary(adf.ura.03)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 2, lag 3
+adf.ura.03 <- ur.df(y = ur.ts.01, type = "drift", lags = 3)
+summary(adf.ura.03)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Specification and estimation: 4 lags
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# ADF test, case 2, lag 3
+adf.ura.04 <- ur.df(y = ur.ts.01, type = "drift", lags = 4)
+summary(adf.ura.04)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# ADF test, case 2, lag 3
+adf.ura.04 <- ur.df(y = ur.ts.01, type = "drift", lags = 4)
+summary(adf.ura.04)
+```
+</div>
+<!--..........................................................................-->
+
+```{r}
+
+# ICs
+lag_len_crit_fun(adf.gdp.04@testreg)
+
+```
+
+<hr />
+
+<p class="head02">
+Information criteria
+</p>
+
+For the lag length selection information criteria such as $AIC$ and $BIC$ can be used.
+
+For this it is importatn to use the same observations for each specification, i.e., for $p=1$,  $p=2$,... and $p=4$ above.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Call provided urca_ur_df_fun function
+adf.ura.res <- urca_ur_df_fun(y = ur.ts, type = c("drift"), lags = 4, selectlags = "AIC")
+# Collect information criteria
+cri.res <- cbind(rbind(lag_len_crit_fun(adf.ura.res$lm.res[[1]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[1]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[1]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[2]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[2]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[2]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[3]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[3]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[3]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[4]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[4]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[4]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[5]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[5]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[5]])$t))
+# Name results
+rownames(cri.res) <- c("AIC", "BIC", "T")
+colnames(cri.res) <- c("p=0", "p=1", "p=2", "p=3", "p=4")
+# Print results
+cri.res
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Call provided urca_ur_df_fun function
+adf.ura.res <- urca_ur_df_fun(y = ur.ts, type = c("drift"), lags = 4, selectlags = "AIC")
+# Collect information criteria
+cri.res <- cbind(rbind(lag_len_crit_fun(adf.ura.res$lm.res[[1]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[1]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[1]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[2]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[2]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[2]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[3]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[3]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[3]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[4]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[4]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[4]])$t),
+                 rbind(lag_len_crit_fun(adf.ura.res$lm.res[[5]])$AIC, lag_len_crit_fun(adf.ura.res$lm.res[[5]])$BIC, lag_len_crit_fun(adf.ura.res$lm.res[[5]])$t))
+# Name results
+rownames(cri.res) <- c("AIC", "BIC", "T")
+colnames(cri.res) <- c("p=0", "p=1", "p=2", "p=3", "p=4")
+# Print results
+cri.res
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+* $AIC$ as well as $BIC$ suggest to include one lagged difference.
+* After accounting for serial correlation the conclusion is less clear.
+* The value of the test statistic $\left(-3.499\right)$ is smaller than the 1% critical value.
+* The unit root can be rejected at 1% significance level.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--
+-> Lags to short:
+.-> Size distortion: critical values do no represent critical type II error
+.-> Here:
+..-> Positive auto correlation in residuals
+..-> theta to high or critical values to large
+..-> Critical values do not represent 5% but rather 6% 
+-> Lags to long:
+.-> Power distortion
+-->
+
+
+
+
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+//// See: https://www.w3schools.com/jsref/met_element_remove.asp
+//// Remove all solutions from html
+//var i, Sol01;
+//Sol01 = document.getElementsByClassName("showSol01");
+//for (i = 0; i < Sol01.length; i++) {
+//  //Sol01[i].remove();
+//  Sol01[i].parentNode.removeChild(Sol01[i]);
+//}
+
+
+
+// swith from "bloc" to "none"
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "block";
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "none";
+}
+
+
+
+
+
+// Hide all solutions (on cklick)
+function hideAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+// Show all solutions (on click)
+function showAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+
+// Hide exclude
+var exc;
+exc = document.getElementById("Exc01");
+exc.style.display = "none";
+
+var exc;
+exc = document.getElementById("Exc02");
+exc.style.display = "none";
+
+
+  
+</script>
+
+````

@@ -1,0 +1,1488 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1538158_download&client_id=UHOH"
+  dat_nam_01: "CASchools_03_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+library(knitr)
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/r_helper_functions.R")
+source("./r-scripts/texreg_extract_fun_02.R")
+
+# 4) load data
+cas.dat <- read.table(file = "./data-sets/CASchools_03_data.txt",
+                      header = TRUE,
+                      sep = ",")
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 07 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Linear Regression with Multiple Regressors (Part 3)
+</p>
+
+<hr />
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data set ``r params$dat_nam_01`` from <span class="R">ILIAS</span> directly or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+Save the data set into a (working) directory of your choice.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+<!-- <hr /> -->
+
+## Task 1 {.tabset .tabset-fade}
+
+<hr />
+
+<p class="head01">
+Class size and student performance
+</p>
+
+We return to our analysis of student performance. For this we use the complete California test score data set`CASchool_03_data.txt` and the two variables $test score$ and the new variable district average income per capita (in 1,000 USD) ($avginc$).
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="col_content">
+
+| Variable   | Description                         | 
+|------------|-------------------------------------| 
+| $students$ | Total enrollment.                   | 
+| $teachers$ | Number of teachers.                 | 
+| $read$     | Average reading score.              | 
+| $math$     | Average math score.                 |
+| $PctEL$    | Percent of English learners.        |
+| $Expen$    | Expenditure per student.            |
+| $avginc$   | Average district income per capita. |
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<hr />
+
+<!--..........................................................................-->
+### Task a) 
+
+Load the data set into your favorite statistics software and draw a scatter plot of the variables $test score$ and $avginc$. What does the plot suggest regarding the nature of the relationship between $test score$ and $avginc$?
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+cas.dat <- read.table(file = "CASchools_03_data.txt",
+                      header = TRUE,
+                      sep = ",")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Construct variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# compute STR and append it to cas.dat
+cas.dat$STR <- cas.dat$students/cas.dat$teachers 
+# compute TestScore and append it to cas.dat
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plot
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# illustration using a scatterplot
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Score",
+     main = "Score vs. Average District Income")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# illustration using a scatterplot
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Score",
+     main = "Score vs. Average District Income")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- * For low and large values of $avinc$ the relationships seems to be nonlinear. -->
+
+* The effect of $avinc$ seems to be different for small and large values of $avinc$.
+* A linear model is probably inappropriate.
+* A polynomial model might be more appropriate.
+
+<!-- * There might be a nonlinear relationship between $avinc$ and $score$. -->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+
+Estimate a linear, quadratic and a cubic specification between $test score$ and $avginc$ and present your estimation results in tabular form. The results are depicted in the table below. Interpret the estimated regression function for Model 2 and Model 3.
+
+<hr />
+
+<p class="head02">
+Regression estimation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model 1
+lm.ct.res.01 <- lm_ct_fun(score ~ avginc, data = cas.dat, hc.type = "HC1")
+lm.ct.res.01$ct
+# model 2
+lm.ct.res.02 <- lm_ct_fun(score ~ avginc + I(avginc^2), data = cas.dat, hc.type = "HC1")
+lm.ct.res.02$ct
+# model 3
+lm.ct.res.03 <- lm_ct_fun(score ~ avginc + I(avginc^2) + I(avginc^3), data = cas.dat, hc.type = "HC1")
+lm.ct.res.03$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# model 1
+lm.ct.res.01 <- lm_ct_fun(score ~ avginc, data = cas.dat, hc.type = "HC1")
+lm.ct.res.01$ct
+# model 2
+lm.ct.res.02 <- lm_ct_fun(score ~ avginc + I(avginc^2), data = cas.dat, hc.type = "HC1")
+lm.ct.res.02$ct
+# model 3
+lm.ct.res.03 <- lm_ct_fun(score ~ avginc + I(avginc^2) + I(avginc^3), data = cas.dat, hc.type = "HC1")
+lm.ct.res.03$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note on using `I()`* </button>
+<div class="col_content">
+
+* To add polynomials to the formula of the *function* `lm()` use the `^` operator in conjunction with the *function* `I()`.
+* For the specification of the formula for the *function* `lm()` the operators `+`, `-`, `*` and `^` have a non arithmetic interpretation.
+* The *function* `I()` ensures that the operators are used as arithmetical operators.
+
+</div>
+<!--..........................................................................-->
+
+
+
+```{r,include=FALSE}
+
+# model 1
+se.01 <- lm.ct.res.01$ct[, 2]
+pval.01 <- lm.ct.res.01$ct[, 4]
+# Model 2
+se.02 <- lm.ct.res.02$ct[, 2]
+pval.02 <- lm.ct.res.02$ct[, 4]
+# Model 3
+se.03 <- lm.ct.res.03$ct[, 2]
+pval.03 <- lm.ct.res.03$ct[, 4]
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some rearrangement!)* </button>
+<div class="col_content">
+
+```{r,include=TRUE}
+screenreg(list(lm.ct.res.01,lm.ct.res.02,lm.ct.res.03),
+          override.se = list(se.01,se.02,se.03),
+          override.pvalues = list(pval.01,pval.02,pval.03),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          # stars = numeric(0),
+          custom.model.names = NULL,
+          custom.coef.names = c("intercept","avginc^1","avginc^2","avginc^3"),
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plot
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Score",
+     main = "Score vs. Average District Income")
+# order the observations for avginc for the fitted lines of Model 2 and Model 3
+order.id <- order(cas.dat$avginc)
+# fitted regression line
+abline(lm.ct.res.01, lty = 2, col = "red") # model 1
+lines(x = cas.dat$avginc[order.id], # model 2
+      y = fitted(lm.ct.res.02)[order.id],
+      col = "blue", 
+      lty = 2)
+lines(x = cas.dat$avginc[order.id], # model 3
+      y = fitted(lm.ct.res.03)[order.id],
+      col = "darkgreen", 
+      lty = 2)
+legend("bottomright",
+       legend = c("Model 1", "Model 2", "Model 3"),
+       col = c("red", "blue", "darkgreen"),
+       lty = c(2,2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Score",
+     main = "Score vs. Average District Income")
+# order the observations for avginc for the fitted lines of Model 2 and Model 3
+order.id <- order(cas.dat$avginc)
+# fitted regression line
+abline(lm.ct.res.01, lty = 2, col = "red") # model 1
+lines(x = cas.dat$avginc[order.id], # model 2
+      y = fitted(lm.ct.res.02)[order.id],
+      col = "blue", 
+      lty = 2)
+lines(x = cas.dat$avginc[order.id], # model 3
+      y = fitted(lm.ct.res.03)[order.id],
+      col = "darkgreen", 
+      lty = 2)
+legend("bottomright",
+       legend = c("Model 1", "Model 2", "Model 3"),
+       col = c("red", "blue", "darkgreen"),
+       lty = c(2,2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+Specification of the polynomial regression line
+
+<u>Model 1</u>:
+
+\begin{align}
+Y_i = \beta_0 + \beta_1 X_i
+\end{align}
+
+<u>Model 2</u>:
+
+\begin{align}
+Y_i = \beta_0 + \beta_1 X_i + \beta_2 X_i^2
+\end{align}
+
+<u>Model 3</u>:
+
+\begin{align}
+Y_i = \beta_0 + \beta_1 X_i + \beta_2 X_i^2 + \beta_3 X_i^3
+\end{align}
+
+Note, each regression line is linear in its parameters!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+
+Calculate the predicted change in $test score$ for a change in $avginc$ from \$5,000 per capita to \$6,000 per capita based on Model 2.
+
+<hr />
+
+<p class="head02">
+Regression results (again)
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some rearrangement!)* </button>
+<div class="col_content">
+
+```{r,include=TRUE}
+screenreg(list(lm.ct.res.01,lm.ct.res.02,lm.ct.res.03),
+          override.se = list(se.01,se.02,se.03),
+          override.pvalues = list(pval.01,pval.02,pval.03),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          # stars = numeric(0),
+          custom.model.names = NULL,
+          custom.coef.names = c("intercept","avginc^1","avginc^2","avginc^3"),
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Calculations
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+pre.01 <- lm.ct.res.02$ct[1,1] + lm.ct.res.02$ct[2,1]*6 + lm.ct.res.02$ct[3,1]*6^2 - 
+          (lm.ct.res.02$ct[1,1] + lm.ct.res.02$ct[2,1]*5 + lm.ct.res.02$ct[3,1]*5^2) 
+pre.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+pre.01 <- lm.ct.res.02$ct[1,1] + lm.ct.res.02$ct[2,1]*6 + lm.ct.res.02$ct[3,1]*6^2 - 
+          (lm.ct.res.02$ct[1,1] + lm.ct.res.02$ct[2,1]*5 + lm.ct.res.02$ct[3,1]*5^2) 
+pre.01
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+\Delta \widehat{test score} &= `r round(lm.ct.res.02$ct[1,1],3)` + \left( `r round(lm.ct.res.02$ct[2,1],3)` \right) \times 6 + \left( `r round(lm.ct.res.02$ct[3,1],3)` \right) \times 6^2 \\
+                            &- \left( `r round(lm.ct.res.02$ct[1,1],3)` + \left( `r round(lm.ct.res.02$ct[2,1],3)` \right) \times 5 + \left( `r round(lm.ct.res.02$ct[3,1],3)` \right) \times 5^2 \right) \\
+                            &= `r round(pre.01,3)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task d) 
+
+Test the null hypothesis of linearity, i.e. Model 1, against the alternative that the population regression is quadratic (Model 2) and/or cubic (Model 3). Use and interpret the results.
+
+<hr />
+
+<p class="head02">
+Test 
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+library("car")
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.ct.res.03, c("I(avginc^2)=0",
+                                               "I(avginc^3)=0"), white.adjust = "hc1")
+lin.hyp.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+library("car")
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.ct.res.03, c("I(avginc^2)=0",
+                                               "I(avginc^3)=0"), white.adjust = "hc1")
+lin.hyp.01
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<p class="head01">
+Hypothesis
+</p>
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+H_0&: \quad \beta_{avinc^2} = \beta_{avinc^3} = 0 \quad \text{vs.} \\
+H_1&: \quad \text{at least one} \neq 0 \quad \quad \quad \alpha = 5\%
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+<p class="sub01">
+*Add the hypothesis here!*
+</p>
+
+</div>
+
+<p class="head01">
+Test statistic
+</p>
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+F^{act}\left( `r lin.hyp.01$Df[2]`, `r lin.hyp.01$Res.Df[2]` \right) &= `r round(lin.hyp.01$F[2],3)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+<p class="sub01">
+*Add the test statistic here!*
+</p>
+
+</div>
+
+<p class="head01">
+$p$-value
+</p>
+
+```{r}
+pval <- round(lin.hyp.01$`Pr(>F)`[2],20)
+```
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+p-\text{value} &= Pr\left[ F\left( `r lin.hyp.01$Df[2]`, `r lin.hyp.01$Res.Df[2]` \right) > F^{act}\left( `r lin.hyp.01$Df[2]`, `r lin.hyp.01$Res.Df[2]` \right) \right] \\
+p-\text{value} &= `r pval`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+<p class="sub01">
+*Add the $p$-value here!*
+</p>
+
+</div>
+
+<p class="head01">
+Decision
+</p>
+
+<div style="color: red" class="showSol01">
+
+\begin{align}
+F^{act}\left( `r lin.hyp.01$Df[2]`, \infty \right) &> F^{crit \, 5\%}\left( `r lin.hyp.01$Df[2]`, \infty \right) \\
+F^{act}\left( `r lin.hyp.01$Df[2]`, \infty \right) &> 3.00
+\end{align}
+
+* Or, rejection of $H_0$ as $p-\text{value} < 0.05$.
+
+<p class="sub01">
+Rejection of $H_0$ as $p-\text{value} < 0.05$.
+</p>
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+<p class="sub01">
+*Add the decision here!*
+</p>
+
+</div>
+
+<p class="head01">
+Note
+</p>
+
+* Check also the asymptotic critical value of the test statistic, i,e, $F\left(2,\infty\right)$, for $\alpha =5\%$.
+* Use Table 4 in Stock and Watson (2020) on p. 767. (see below)
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Critical value for the asymptotic F-distribution
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Table of Stock and Watson (2020)* </button>
+<div class="col_content">
+
+![](C:/Users/Markus/uni-hohenheim.de/Robert Jung - 520KOneDrive/MA_Lehre/MA_EMBE/MA_EMBE_2122/MA_EconometricMethods_WiSe2122/06_ExerciseSheet_No06/SW_Table_04.png)
+
+<p class="sou01">
+Source: Stock and Watson (2020) on p. 767
+</p>
+
+<br>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task e) 
+
+Estimate a linear-log model for $test score$ and $avginc$ and interpret the slope coefficient. Use the results depicted in Table 3 of the exercise sheet. Add the fitted regression line of the linear-log model to the scatter plot of Task 1a) and compare it with the fitted regression line of the cubic model.
+
+<hr />
+
+<p class="head02">
+Regression estimation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model 4
+lm.ct.res.04 <- lm_ct_fun(score ~ log(avginc), data = cas.dat, hc.type = "HC1")
+lm.ct.res.04$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# model 4
+lm.ct.res.04 <- lm_ct_fun(score ~ log(avginc), data = cas.dat, hc.type = "HC1")
+lm.ct.res.04$ct
+```
+</div>
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+# model 1
+se.04 <- lm.ct.res.04$ct[, 2]
+pval.04 <- lm.ct.res.04$ct[, 4]
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some rearrangement!)* </button>
+<div class="col_content">
+
+```{r,include=TRUE}
+screenreg(list(lm.ct.res.04),
+          override.se = list(se.04),
+          override.pvalues = list(pval.04),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          stars = numeric(0),
+          custom.coef.names = c("Intercept","log(avginc)"),
+          # custom.model.names = c("Model 4","Model 5 $\\left(log\\left(y\\right)\\right)$","Model 6 $\\left(log\\left(y\\right)\\right)$"),
+          custom.model.names = c("Model 4"),
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Remember
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Log* </button>
+<div class="col_content">
+
+<p class="head02">
+Remember from calculus
+</p>
+
+\begin{align}
+ln\left(x+\Delta x\right) - ln\left(x\right) \cong \frac{\Delta x}{x} \quad \text{when } \frac{\Delta x}{x} \text{ is small}
+\end{align}
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="col_content">
+
+<p class="head02">
+Specification
+</p>
+
+\begin{align}
+Y_i = \beta_0 + \beta_1 ln\left(X_i\right)
+\end{align}
+
+Note, again, the regression line is linear in its parameters!
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Coefficients (in general)* </button>
+<div class="col_content">
+
+<!-- <hr /> -->
+
+$\Delta Y$ w.r.t. $\Delta X$
+
+\begin{align}
+\Big[Y+\Delta Y\Big] - \Big[Y\Big]&= 
+\Big[\beta_0+\beta_1 ln\left(X+\Delta X\right)\Big] - \Big[\beta_0+\beta_1 ln\left(X\right)\Big] \\
+\Delta Y &=
+\beta_1\Big[ln\left(X+\Delta X\right)-ln\left(X\right)\Big] \\
+\Delta Y &\cong \, \beta_1\frac{\Delta X}{X} \quad \text{(approximately)} \\
+\end{align}
+
+$\Rightarrow$ A $1\%$ change in $X$ is associated with a change in $Y$ of $0.01\beta_1$.
+
+<!-- <hr /> -->
+
+<!-- <u>Interpretation above</u> -->
+
+<!-- A $1\%$ change in $aginc$ (in thousand per capita) is associated with an increase in the test score by $0.364$. -->
+
+
+
+<!-- <u>Note</u>, -->
+
+<!-- \begin{align} -->
+<!-- 1\Delta^{\%} X \Rightarrow 0.01\frac{\Delta X}{X}\\ -->
+<!-- \end{align} -->
+
+<!-- <u>So</u>, -->
+
+<!-- \begin{align} -->
+<!-- \Delta Y &\cong \beta_1 \Delta^{\%} X \quad \text{(approximately)} -->
+<!-- \end{align} -->
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Coefficients (in particular)* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+A $1\%$ change in $avginc$ (in thousand per capita) is associated with an increase in the test score by $0.364$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plot
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# Illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Test Score",
+     main = "Test Score vs. Average District Income")
+# Order the observations for avginc for the fitted lines
+order.id <- order(cas.dat$avginc)
+# Fitted regression line
+lines(x = cas.dat$avginc[order.id], # Cubic model
+      y = fitted(lm.ct.res.03)[order.id],
+      col = "blue", 
+      lty = 2, lwd = 2)
+lines(x = cas.dat$avginc[order.id], # lin-log model
+      y = fitted(lm.ct.res.04)[order.id],
+      col = "red", 
+      lty = 2, lwd = 2)
+legend("bottomright",
+       legend = c("Model 3", "Model 4"),
+       col = c("blue", "red"),
+       lty = c(2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# Illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, cas.dat$score,
+     xlab = "Average District Income", ylab = "Test Score",
+     main = "Test Score vs. Average District Income")
+# Order the observations for avginc for the fitted lines
+order.id <- order(cas.dat$avginc)
+# Fitted regression line
+lines(x = cas.dat$avginc[order.id], # Cubic model
+      y = fitted(lm.ct.res.03)[order.id],
+      col = "blue", 
+      lty = 2, lwd = 2)
+lines(x = cas.dat$avginc[order.id], # lin-log model
+      y = fitted(lm.ct.res.04)[order.id],
+      col = "red", 
+      lty = 2, lwd = 2)
+legend("bottomright",
+       legend = c("Model 3", "Model 4"),
+       col = c("blue", "red"),
+       lty = c(2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Fitting* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <u>Fitting</u>: -->
+
+* The fitted regression function of the polynomial and the lin-log model are quite similar.
+* The $\overline{R^2}$ of the lin-log model is slightly higher.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task f) 
+
+Estimate a log-linear and a log-log model for $test score$ and $avginc$ and interpret the slope coefficient. Use the results depicted in Table 3 of the exercise sheet. Compare the regression lines of the two models in a scatter plot of the variables $log\left(test score\right)$ and $avginc$.
+
+<hr />
+
+<p class="head02">
+Regression estimation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model 5
+lm.ct.res.05 <- lm_ct_fun(log(score) ~ avginc, data = cas.dat, hc.type = "HC1")
+lm.ct.res.05$ct
+# model 6
+lm.ct.res.06 <- lm_ct_fun(log(score) ~ log(avginc), data = cas.dat, hc.type = "HC1")
+lm.ct.res.06$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# model 5
+lm.ct.res.05 <- lm_ct_fun(log(score) ~ avginc, data = cas.dat, hc.type = "HC1")
+lm.ct.res.05$ct
+# model 6
+lm.ct.res.06 <- lm_ct_fun(log(score) ~ log(avginc), data = cas.dat, hc.type = "HC1")
+lm.ct.res.06$ct
+```
+</div>
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+# Model 5
+se.05 <- lm.ct.res.05$ct[, 2]
+pval.05 <- lm.ct.res.05$ct[, 4]
+# Model 6
+se.06 <- lm.ct.res.06$ct[, 2]
+pval.06 <- lm.ct.res.06$ct[, 4]
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Results (after some rearrangement!)* </button>
+<div class="col_content">
+
+```{r,include=TRUE}
+screenreg(list(lm.ct.res.04,lm.ct.res.05,lm.ct.res.06),
+          override.se = list(se.04,se.05,se.06),
+          override.pvalues = list(pval.04,pval.05,pval.06),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          stars = numeric(0),
+          custom.coef.names = c("Intercept","log(avginc)","avginc"),
+          custom.model.names = c("Model 4","Model 5 (log(y))","Model 6 (log(y))"),
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Remember
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Specification* </button>
+<div class="col_content">
+
+<!-- <hr /> -->
+
+<p class="head02">
+Log-linear model
+</p>
+
+\begin{align}
+ln\left(Y_i\right) = \beta_0 + \beta_1 X_i
+\end{align}
+
+<!-- <hr /> -->
+
+<p class="head02">
+Log-log model
+</p>
+
+\begin{align}
+ln\left(Y_i\right) = \beta_0 + \beta_1 ln\left(X_i\right)
+\end{align}
+
+Note, each regression line is linear in its parameters!
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Coefficients (in general)* </button>
+<div class="col_content">
+
+<!-- <hr /> -->
+
+<p class="head02">
+Log-linear model
+</p>
+
+$\Delta Y$ w.r.t. $\Delta X$
+
+\begin{align}
+\Big[ln\left(Y+\Delta Y\right)\Big]-\Big[ln\left(Y\right)\Big] &=  \Big[\beta_0+\beta_1 \left(X+\Delta X\right)\Big] - \Big[\beta_0+\beta_1 X\Big] \\
+ln\left(Y+\Delta Y\right)-ln\left(Y\right) &= \beta_1 \Delta X \\
+\frac{\Delta Y}{Y} &\cong \beta_1 \Delta X \quad \text{(approximately)} \\
+\end{align}
+
+$\Rightarrow$ A change in $X$ by one unit $\left(\Delta X=1\right)$ is associated with a $100\beta_1\%$ change in $Y$.
+
+<hr />
+
+<p class="head02">
+Log-log model
+</p>
+
+$\Delta Y$ w.r.t. $\Delta X$
+
+\begin{align}
+\Big[ln\left(Y+\Delta Y\right)\Big]-\Big[ln\left(Y\right)\Big] &= \Big[\beta_0+\beta_1 ln\left(X+\Delta X\right)\Big] - \Big[\beta_0+\beta_1 ln\left(X\right)\Big] \\
+ln\left(Y+\Delta Y\right)-ln\left(Y\right) &= \beta_1 \Big[ln\left(X+\Delta X\right)-ln\left(X\right) \Big]\\
+\frac{\Delta Y}{Y} &\cong \beta_1 \frac{\Delta X}{X} \quad \text{(approximately)} \\
+\end{align}
+
+<!-- $\Rightarrow$ A $1\%$ change in $X$ is associated with a $\beta_1\%$ change in $Y$, so $\beta_1$ is the elasticity of $Y$ with respect to $X$. -->
+
+<div style = "margin-left: 30px">
+<span style = "margin-left: -30px; text-indent: 30">
+$\Rightarrow$ A $1\%$ change in $X$ is associated with a $\beta_1\%$ change in $Y$, so $\beta_1$ is the elasticity of $Y$ with respect to $X$.
+</span>
+</div>
+
+<!-- <hr /> -->
+
+<!-- <u>Interpretation above</u> -->
+
+<!-- * Log-lin model: A $1$ unit change in $avginc$ (in thousand per capita), i.e., one thousand USD, is associated with an increase in the test score by $0.3\%$. -->
+<!-- * Log-log model: A $1\%$ change in $avginc$ (in thousand per capita) is associated with an increase in the test score by $0.055\%$. -->
+
+
+
+
+
+<!-- <u>Note</u>, -->
+
+<!-- \begin{align} -->
+<!-- \Delta^{\%} X = 0.01\frac{\Delta X}{X} \\ -->
+<!-- \Delta^{\%} Y = 0.01\frac{\Delta Y}{Y} -->
+<!-- \end{align} -->
+
+<!-- <u>So</u>, -->
+
+<!-- \begin{align} -->
+<!-- \Delta^{\%} Y &\cong \beta_1 \Delta^{\%} X \quad \text{(approximately)} -->
+<!-- \end{align} -->
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Coefficients (in particular)* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* <u>Log-lin model</u>: A $1$ unit change in $avginc$ (in thousand per capita), i.e., one thousand USD, is associated with an increase in the test score by $0.3\%$.
+* <u>Log-log model</u>: A $1\%$ change in $avginc$ (in thousand per capita) is associated with an increase in the test score by $0.055\%$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plot
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, log(cas.dat$score),
+     xlab = "Average District Income", ylab = "Test Score in log",
+     main = "Test Score (in log) vs. Average District Income")
+# order the observations for avginc for the fitted lines
+order.id <- order(cas.dat$avginc)
+# fitted regression line
+lines(x = cas.dat$avginc[order.id], # log-lin model
+      y = fitted(lm.ct.res.05)[order.id],
+      col = "blue", 
+      lty = 2, lwd = 2)
+lines(x = cas.dat$avginc[order.id], # log-log model
+      y = fitted(lm.ct.res.06)[order.id],
+      col = "red", 
+      lty = 2, lwd = 2)
+legend("bottomright",
+       legend = c("Model 5", "Model 6"),
+       col = c("blue", "red"),
+       lty = c(2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# illustration using a scatterplot and the fitted regression line
+plot(cas.dat$avginc, log(cas.dat$score),
+     xlab = "Average District Income", ylab = "Test Score in log",
+     main = "Test Score (in log) vs. Average District Income")
+# order the observations for avginc for the fitted lines
+order.id <- order(cas.dat$avginc)
+# fitted regression line
+lines(x = cas.dat$avginc[order.id], # log-lin model
+      y = fitted(lm.ct.res.05)[order.id],
+      col = "blue", 
+      lty = 2, lwd = 2)
+lines(x = cas.dat$avginc[order.id], # log-log model
+      y = fitted(lm.ct.res.06)[order.id],
+      col = "red", 
+      lty = 2, lwd = 2)
+legend("bottomright",
+       legend = c("Model 5", "Model 6"),
+       col = c("blue", "red"),
+       lty = c(2,2),
+       inset = 0.01)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Fitting* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* The fitted regression function of the log-log specification is better than of the log-linear specification.
+* The $\overline{R^2}$ of the log-log model is also higher.
+* <u>Important</u>: $R^2$ or $\overline{R^2}$ cannot be used to decide on Model 1 - Model 4 vs. Model 5 - 6!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!-- <hr /> -->
+
+<!-- ## Literature -->
+
+<!-- <div id="refs"></div> -->
+
+<!--..........................................................................-->
+# 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+// swith from "bloc" to "none"
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none";
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block";
+}
+
+// === OLD === //
+
+// Hide all solutions (on cklick)
+function hideAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "none";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "block";
+  }
+  
+}
+
+// Show all solutions (on click)
+function showAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+// Hide exclude
+var exc;
+exc = document.getElementById("Exc01");
+exc.style.display = "none";
+
+var exc;
+exc = document.getElementById("Exc02");
+exc.style.display = "none";
+
+</script>
+
+````

@@ -1,0 +1,1744 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1542766_download&client_id=UHOH"
+  dat_nam_01: "Fatalities_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+library(knitr)
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/r_helper_functions.R")
+source("./r-scripts/texreg_extract_fun_02.R")
+
+# 4) load data
+fat.dat <- read.table(file = "./data-sets/Fatalities_data.txt",
+                      header = TRUE,
+                      sep = ",")
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 08 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Regression Analysis with Panel Data
+</p>
+
+<hr />
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data set ``r params$dat_nam_01`` from <span class="R">ILIAS</span> directly or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+Save the data set into a (working) directory of your choice.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+<!-- <hr /> -->
+
+## Task 1 {.tabset .tabset-fade}
+
+<hr />
+
+<p class="head01">
+Traffic Deaths and Alcohol Taxes
+</p>
+
+We return to the analysis of the effects of alcohol taxes and drunk driving laws on road fatalities from the lecture. For this we use the data set `Fatalities_data.txt` containing annual state level observations on U.S. traffic fatalities for the period 1982 through 1988 with the variables described below.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable description* </button>
+<div class="col_content">
+
+| Variable  | Description                   | 
+|-----------|-------------------------------| 
+| $state$   | State.                        |
+| $year$    | Year.                         | 
+| $fatal$   | Number of vehicle fatalities. | 
+| $pop$     | Population.                   | 
+| $beertax$ | Tax on case of beer.          | 
+
+
+</div>
+<!--..........................................................................-->
+
+
+
+<hr />
+
+<!--..........................................................................-->
+### Task a) 
+
+Load the data set into your favorite statistics software and describe the structure of the data set.
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+fat.dat <- read.table(file = "Fatalities_data.txt",
+                      header = TRUE,
+                      sep = ",")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Structure of the data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# structure of data set
+str(fat.dat)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# structure of data set
+str(fat.dat)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Transform state and year into factor variable
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# transform year to factor variable
+fat.dat$state <- as.factor(fat.dat$state)
+fat.dat$state
+# transform year to factor variable
+fat.dat$year <- as.factor(fat.dat$year)
+fat.dat$year
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# transform year to factor variable
+fat.dat$state <- as.factor(fat.dat$state)
+fat.dat$state
+# transform year to factor variable
+fat.dat$year <- as.factor(fat.dat$year)
+fat.dat$year
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* 336 observations
+* 48 states (entities)
+* 7 years from 1982 to 1988 (time periods)
+* 32 additional variables
+* $\Rightarrow$ Balanced panel observations for all time periods for each entity (vs. unbalanced panel)
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+
+Estimate simple regressions using data for years 1982 and 1988 that model the relationship between beer tax (adjusted for 1988 dollars) and the traffic fatality rate, measured as the number of fatalities per 10000 inhabitants. Construct two scatter plots and add the corresponding estimated regression functions. Discuss the results.
+
+<hr />
+
+<p class="head02">
+Fatality rate and subsets
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# define the fatality rate
+fat.dat$fatal_rate <- fat.dat$fatal / fat.dat$pop * 10000
+# subset the data
+fat.dat.1982 <- subset(fat.dat, year == "1982")
+fat.dat.1988 <- subset(fat.dat, year == "1988")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Regression for 1982
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model 1982
+lm.1982 <- lm_ct_fun(fatal_rate ~ beertax, data = fat.dat.1982, hc.type = "HC1")
+lm.1982$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# model 1982
+lm.1982 <- lm_ct_fun(fatal_rate ~ beertax, data = fat.dat.1982, hc.type = "HC1")
+lm.1982$ct
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Regression for 1988
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model 1988
+lm.1988 <- lm_ct_fun(fatal_rate ~ beertax, data = fat.dat.1988, hc.type = "HC1")
+lm.1988$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# model 1988
+lm.1988 <- lm_ct_fun(fatal_rate ~ beertax, data = fat.dat.1988, hc.type = "HC1")
+lm.1988$ct
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Estimation Results
+</p>
+
+```{r}
+# regression 1982
+se.01 <- lm.1982$ct[, 2]
+pval.01 <- lm.1982$ct[, 4]
+# regression 1988
+se.02 <- lm.1988$ct[, 2]
+pval.02 <- lm.1988$ct[, 4]
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Regression results* </button>
+<div class="col_content">
+
+```{r,include=TRUE}
+screenreg(list(lm.1982,lm.1988),
+          override.se = list(se.01,se.02),
+          override.pvalues = list(pval.01,pval.02),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          #stars = numeric(0),
+          custom.model.names = c("1982","1988"),
+          custom.coef.names = c("intercept","beertax"),
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plots
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# divide plot window
+par(mfrow=c(1,2))
+# scatter plot and estimated regression line for 1982 data
+plot(x = fat.dat.1982$beertax, 
+     y = fat.dat.1982$fatal_rate, 
+     xlab = "Beer tax (in 1988 dollars)",
+     ylab = "Fatality rate (fatalities per 10000)",
+     main = "1982",
+     ylim = c(0, 4.5))
+abline(lm.1982, lty = 2, col = "red")
+# scatter plot and estimated regression line for 1988 data
+plot(x = fat.dat.1988$beertax, 
+     y = fat.dat.1988$fatal_rate, 
+     xlab = "Beer tax (in 1988 dollars)",
+     ylab = "Fatality rate (fatalities per 10000)",
+     main = "1988",
+     ylim = c(0, 4.5))
+abline(lm.1988, lty = 2, col = "red")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# divide plot window
+par(mfrow=c(1,2))
+# scatter plot and estimated regression line for 1982 data
+plot(x = fat.dat.1982$beertax, 
+     y = fat.dat.1982$fatal_rate, 
+     xlab = "Beer tax (in 1988 dollars)",
+     ylab = "Fatality rate (fatalities per 10000)",
+     main = "1982",
+     ylim = c(0, 4.5))
+abline(lm.1982, lty = 2, col = "red")
+# scatter plot and estimated regression line for 1988 data
+plot(x = fat.dat.1988$beertax, 
+     y = fat.dat.1988$fatal_rate, 
+     xlab = "Beer tax (in 1988 dollars)",
+     ylab = "Fatality rate (fatalities per 10000)",
+     main = "1988",
+     ylim = c(0, 4.5))
+abline(lm.1988, lty = 2, col = "red")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!--
+\begin{align*}
+  \widehat{Fat} =& \, \underset{(0.15)}{2.01} + \underset{(0.13)}{0.15} \times Tax \quad (1982 \text{ data}) \\
+  \widehat{Fat} =& \, \underset{(0.11)}{1.86} + \underset{(0.13)}{0.44} \times Tax \quad (1988 \text{ data})
+\end{align*}
+-->
+
+* Positive relationship between beer tax and fatality rate. Reasonable?
+* OVB? Potentially yes I
+  * No additional observable factors/variables included
+  * E.g., economic income
+  * $\Rightarrow$ Add additional observed variables!
+* OVB? Potentially yes II
+  * Unobservable factors that differ across states (but not across time)
+  * E.g., populations' attitude towards drunk driving
+  * $\Rightarrow$ Use fixed effects models!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+
+Use only $T=2$ time periods $t=1982,1988$ and regress the difference in the fatality rate between 1988 and 1982 on the difference in beer tax. Again, construct a scatter plot and add the estimated regression function. Discuss the results. What are the merits of this strategy?
+
+<hr />
+
+<p class="head02">
+Remember
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Remember* </button>
+<div class="col_content">
+
+<p class="head03">
+General
+</p>
+
+\begin{align*}
+Fat_{it} = \beta_0 + \beta_1 Tax_{it} + \beta_2 Z_{i} + u_{it}
+\end{align*}
+
+<p class="head03">
+For $\underline{t=1982}$ and $\underline{t=1988}$
+</p>
+
+\begin{align*}
+  Fat_{i1988} =&\, \beta_0 + \beta_1 Tax_{i1988} + \beta_2 Z_i + u_{i1988} \\
+  Fat_{i1982} =&\, \beta_0 + \beta_1 Tax_{i1982} + \beta_2 Z_i + u_{i1982}
+\end{align*}
+
+$\Rightarrow$ $Z_i$: State specific characteristics.
+
+<!--
+-> population regression model with unobserved factors
+-> different between states but constant over time
+-> E.g. the populations' attitude towards drunk driving.
+-->
+
+<p class="head03">
+Eliminate $\underline{Z_i}$
+</p>
+
+\begin{align*}
+  Fat_{i1988} - Fat_{i1982} &= \beta_0 - \beta_0 \\
+  &+ \beta_1 (Tax_{i1988} - Tax_{i1982}) \\
+  &+ \beta_2 (Z_{i} - Z_{i}) \\
+  &+ u_{i1988} - u_{i1982} \\
+  Fat_{i1988} - Fat_{i1982} &= \beta_1 (Tax_{i1988} - Tax_{i1982}) \\
+  &+ u_{i1988} - u_{i1982}
+\end{align*}
+
+$\Rightarrow$ Estimate for $\beta_1$ is robust to possible bias due to omission of $Z_i$.
+
+<!--
+-> eliminate $Z_i$ using first difference
+-->
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Compute first difference
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# compute first differences 
+diff_fatal_rate <- fat.dat.1988$fatal_rate - fat.dat.1982$fatal_rate
+diff_beertax <- fat.dat.1988$beertax - fat.dat.1982$beertax
+```
+</div>
+<!--..........................................................................-->
+
+<p class="head02">
+Regression
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model difference
+lm.dif <- lm_ct_fun(diff_fatal_rate ~ diff_beertax, data = fat.dat, hc.type = "HC1")
+lm.dif$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# model difference
+lm.dif <- lm_ct_fun(diff_fatal_rate ~ diff_beertax, data = fat.dat, hc.type = "HC1")
+lm.dif$ct
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter plots
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# divide plot window
+par(mfrow=c(1,1))
+# scatter plot and estimated regression line differenced data
+plot(x = diff_beertax, 
+     y = diff_fatal_rate, 
+     xlab = "Change in beer tax (in 1988 dollars)",
+     ylab = "Change in fatality rate (fatalities per 10000)",
+     main = "Changes in Traffic Fatality Rates and Beer Taxes in 1982-1988",
+     xlim = c(-0.6, 0.6),
+     ylim = c(-1.5, 1))
+# add the regression line to plot
+abline(lm.dif, lty = 2, col = "red")
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# divide plot window
+par(mfrow=c(1,1))
+# scatter plot and estimated regression line differenced data
+plot(x = diff_beertax, 
+     y = diff_fatal_rate, 
+     xlab = "Change in beer tax (in 1988 dollars)",
+     ylab = "Change in fatality rate (fatalities per 10000)",
+     main = "Changes in Traffic Fatality Rates and Beer Taxes in 1982-1988",
+     xlim = c(-0.6, 0.6),
+     ylim = c(-1.5, 1))
+# add the regression line to plot
+abline(lm.dif, lty = 2, col = "red")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Results
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code/Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# summary statistic
+summary(fat.dat$fatal_rate)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* Estimated effect of beer tax is now negative and significant.
+  * <u>Intercept</u>: Change in mean of $Fat$ between 1982 and 1988 without change in $Tax$.
+  * <u>Slope</u>: Raising the beer tax by $\$1$ decreases traffic fatalities by $1.04$ per $10000$ people.
+* Large effect! Average fatality rate is approximately $2$ persons per $10000$ people.
+  * Potential bias due to omitted factors in the single-year regression that influence the fatality rate and are correlated with the beer tax and change over time.
+  * E.g., safety measures that change over time and which are correlated with beer tax.
+* Use fixed effects regression model, i.e., use data for more than $T=2$ time periods and add control variables.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task d) {.tabset .tabset-fade}
+
+Now, use all time periods and estimate a fixed effects regression model. Discuss the estimation strategy and the estimation results. Extract the entity specific fixed effects.
+
+<hr />
+
+<p class="head02">
+Remember: Entity specific unobservable effects
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Remember* </button>
+<div class="col_content">
+
+<p class="head03">
+Panel regression model
+</p>
+
+\begin{align*}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \beta_2 Z_i + u_{it}
+\end{align*}
+
+$Z_i$: Unobserved time-invariant heterogeneity across entities $i=1,\dots,n$.
+
+<!--
+-> Panel regression model with unobservable heterogeneity across entities
+-> E.g. the populations' attitude towards drunk driving.
+-->
+
+<p class="head03">
+Entity specific intercepts $\underline{\alpha_i}$
+</p>
+
+\begin{align*}
+Y_{it} &= \alpha_i + \beta_1 X_{it} + u_{it} \\
+\alpha_i &= \beta_0 + \beta_2 Z_i
+\end{align*}
+
+$\alpha_i$: Individual specific intercepts $i=1,\dots,n$.
+
+<!--
+-> Introduce entity specific intercepts $\alpha_i$
+-->
+
+<hr>
+
+<p class="head03">
+Use $\underline{n-1}$ dummy variables $\underline{D2_i \cdots Dn_i}$ and an intercept
+</p>
+
+\begin{align*}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \gamma_2 D2_i + \gamma_3 D3_i + \cdots + \gamma_n Dn_i + u_{it}
+\end{align*}
+
+* $D2_i \cdots Dn_i$ are $n-1$ dummy variables and represent $n-1$ different intercepts $\alpha_i$.
+* Eliminates omitted variable bias caused by excluding unobserved variables that change across entities but are constant over time periods.
+
+<hr>
+
+<p class="head03">
+Alternatively, use $\underline{n}$ dummy variables $\underline{D1_i \cdots Dn_i}$ and no intercept
+</p>
+
+\begin{align*}
+Y_{it} = \beta_1 X_{it} + \gamma_1 D1_i + \gamma_2 D2_i + \gamma_3 D3_i + \cdots + \gamma_n Dn_i + u_{it}
+\end{align*}
+
+* $D1_i \cdots Dn_i$ are $n$ dummy variables and represent $n$ different intercepts $\alpha_i$.
+* Eliminates omitted variable bias caused by excluding unobserved variables that change across entities but are constant over time periods.
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<hr>
+
+<!--..........................................................................-->
+#### Dummy Regression
+
+<hr>
+
+<p class="head02">
+Use entity specific dummy variables and `lm()`
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# include no intercept, N=48 state dummies
+lm.efe.dum <- lm_ct_fun(fatal_rate ~ beertax + state - 1, data = fat.dat, hc.type = "HC1")
+lm.efe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# include no intercept, N=48 state dummies
+lm.efe.dum <- lm_ct_fun(fatal_rate ~ beertax + state - 1, data = fat.dat, hc.type = "HC1")
+lm.efe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+
+```{r, include=FALSE}
+
+# include intercept and n-1 dummies
+lm.efe.dum.02 <- lm(fatal_rate ~ beertax + state, data = fat.dat)
+lm.efe.dum.02
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+<!-- * By including an intercept *R* automatically omits the first state dummy, i.e. for `stateal`. -->
+<!-- * With intercept: Effect of `stateal` stored in the intercept. -->
+
+* Exclude the overall intercept `(- 1)` to include $48$ entity dummies for all $48$ states.
+* Only heteroskedasticity-robust no cluster-robust SEs.
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+#### Within Transformation
+
+<hr />
+
+<p class="head02">
+Use `plm_ct_fun()` with entity fixed effects
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# estimation
+plm.efe <- plm_ct_fun(fatal_rate ~ beertax, 
+                             data = fat.dat,
+                             index = c("state", "year"), 
+                             model = "within",
+                             effect = "individual")
+# results
+plm.efe$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# estimation
+plm.efe <- plm_ct_fun(fatal_rate ~ beertax, 
+                             data = fat.dat,
+                             index = c("state", "year"), 
+                             model = "within",
+                             effect = "individual")
+# results
+plm.efe$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+<!-- * By including an intercept *R* automatically omits the first state dummy, i.e. for `stateal`. -->
+<!-- * With intercept: Effect of `stateal` stored in the intercept. -->
+
+Cluster-robust SEs based on small sample adjustment of *STATA* (see S&W).
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+<!--..........................................................................-->
+#### Fixed effects
+
+<p class="head02">
+Entity specific fixed effects using dummy regression and `lm()`
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# fixed effects of lm result (HC robust inference only!)
+lm.efe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# fixed effects of lm result (HC robust inference only!)
+lm.efe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* SEs are only heteroskedasticity-robust.
+* No adjustment for potential autocorrelation over time periods!
+* See approach in Task f) for cluster-robust SEs later.
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+
+<!-- <button type="button" class="collapsible02"> *Interpretation* </button> -->
+<!-- <div class="col_content"> -->
+
+<!-- <div class="showSol01"> -->
+
+<!-- * Estimates for the entity specific dummy variables. -->
+<!-- * Control for unobservable factors that differ across states but not time. -->
+
+<!-- </div> -->
+
+<!-- <div class="noSol01"> -->
+
+<!-- *Add your results here!* -->
+
+<!-- </div> -->
+
+<!-- </div> -->
+
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+#### Interpretation
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* Effect of beer tax is negative and significant based on clustered SEs (see later).
+* Raising the beer tax by $\$1$ decreases traffic fatalities by $0.66$ per $10000$ people.
+* Effect is still high!
+* Potential other omitted variables that vary over time and thus cause a bias.
+* $\Rightarrow$ Include time fixed effects!
+
+<!--
+* Including state fixed effects eliminates the risk of a bias due to omitted factors that vary across states but not over time.
+-->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task e) {.tabset .tabset-fade}
+
+Add time fixed effects to your fixed effects regression model above and discuss the estimation results. Extract the time specific fixed effects.
+
+<hr />
+
+<p class="head02">
+Remember: Time specific unobservable effects
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Remember* </button>
+<div class="col_content">
+
+<p class="head03">
+Panel regression model
+</p>
+
+\begin{align*}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \beta_2 Z_t + u_{it}
+\end{align*}
+
+$Z_t$: Unobserved entity-invariant heterogeneity across the time periods $t=1,\dots,T$.
+
+<!--
+-> Panel regression model with unobservable heterogeneity across time periods
+-> E.g. change in federal laws over time.
+-->
+
+<hr>
+
+<p class="head03">
+Time specific intercepts $\underline{\alpha_t}$
+</p>
+
+\begin{align*}
+Y_{it} &= \alpha_t + \beta_1 X_{it} + u_{it} \\
+\alpha_t &= \beta_0 + \beta_2 Z_t
+\end{align*}
+
+$\alpha_t$: Time specific intercepts $t=1,\dots,T$
+
+<!--
+-> Introduce time specific intercepts $\alpha_i$
+-->
+
+<hr>
+
+<p class="head03">
+Use $\underline{T-1}$ dummy variables $\underline{B2_t \cdots BT_T}$ and an intercept
+</p>
+
+\begin{align*}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \delta_2 B2_t + \cdots + \delta_T BT_t + u_{it}
+\end{align*}
+
+* $B2_t \cdots BT_t$ are $T-1$ dummy variables.
+* Eliminates omitted variable bias caused by excluding unobserved variables that change over time but are constant across entities.
+
+<hr>
+
+<p class="head03">
+Entity and time fixed effects model
+</p>
+
+\begin{align*}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \gamma_2 D2_i + \cdots + \gamma_n Dn_i + \delta_2 B2_t + \cdots + \delta_T BT_t + u_{it}
+\end{align*}
+
+* Include a constant, $n-1$ entity dummies and $T-1$ time dummies.
+* Eliminates omitted variable bias caused by excluding unobservable variables...
+    - that change across entities but are constant over time and...
+    - that change over time but are constant over entities.
+
+<hr>
+
+Alternatively, exclude a constant, include $T$ time dummies and $n-1$ entity dummies.
+
+\begin{align*}
+Y_{it} = \beta_1 X_{it} + \gamma_2 D2_i + \cdots + \gamma_n Dn_i + \delta_1 B1_t + \cdots + \delta_T BT_t + u_{it}
+\end{align*}
+
+</div>
+<!--..........................................................................-->
+
+<hr>
+
+<!--..........................................................................-->
+#### Dummy Regression
+
+<hr />
+
+<p class="head02">
+Use entity and time specific dummy variables and `lm()`
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# include no intercept, T=7 time dummies and N-1=47 state dummies 
+lm.etfe.dum <- lm_ct_fun(fatal_rate ~ beertax + year + state - 1, data = fat.dat)
+lm.etfe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# include no intercept, T=7 time dummies and N-1=47 state dummies
+lm.etfe.dum <- lm_ct_fun(fatal_rate ~ beertax + year + state - 1, data = fat.dat)
+lm.etfe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* Exclude the overall intercept `(- 1)`, use $7$ time dummies for all $7$ time periods and $48-1$ entity dummies for $48-1$ states.
+* Time dummies: Time intercepts for the excluded entity (here: Alabama)
+* Entity dummies: Entity difference to the excluded entity (here: Alabama).
+* Only heteroskedasticity-robust no cluster-robust SEs (here!).
+
+<!-- Entity intercepts The coefficient of the entity dummies measure the difference to the excluded entity (here: Alabama). -->
+
+```{r,include=FALSE}
+
+-0.63998 + 3.51137
+
+```
+
+E.g., the estimated time intercept for the state Arizona
+
+```{r, echo=TRUE, include=TRUE}
+
+# Intercept of Arkansas in 1982
+3.511 + (-0.639)
+
+# Intercept of Arkansas in 1983
+3.431 + (-0.639)
+
+
+```
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+#### Within Transformation
+
+<p class="head02">
+Use `plm_ct_fun()` with entity and time fixed effects
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# estimation
+plm.etfe <- plm_ct_fun(fatal_rate ~ beertax + year, 
+                       data = fat.dat,
+                       index = c("state", "year"),
+                       model = "within",
+                       effect = "individual")
+# results
+plm.etfe$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# estimation
+plm.etfe <- plm_ct_fun(fatal_rate ~ beertax + year, 
+                       data = fat.dat,
+                       index = c("state", "year"),
+                       model = "within",
+                       effect = "individual")
+# results
+plm.etfe$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+The approach above involves the within transformation within the entities and the inclusion of time dummy variables.
+
+Alternatively, the within transformation can be conducted within the entities and time periods.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# estimation
+plm.etfe.xx <- plm_ct_fun(fatal_rate ~ beertax, 
+                       data = fat.dat,
+                       index = c("state", "year"),
+                       model = "within",
+                       effect = "twoways")
+# results
+plm.etfe.xx$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# estimation
+plm.etfe.xx <- plm_ct_fun(fatal_rate ~ beertax, 
+                       data = fat.dat,
+                       index = c("state", "year"),
+                       model = "within",
+                       effect = "twoways")
+# results
+plm.etfe.xx$ct
+```
+</div>
+<!--..........................................................................-->
+
+This approach results in slightly different SEs which vanishes as the sample size grows.
+
+Both approaches use cluster-robust SEs based on small sample adjustment of *STATA* (see S&W).
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+
+<!-- <button type="button" class="collapsible02"> *Interpretation* </button> -->
+<!-- <div class="col_content"> -->
+
+<!-- <div class="showSol01"> -->
+
+<!-- * Close to entity fixed effects estimate -->
+<!-- * Less precise than entity fixed effect estimate but still significant at $10\%$ -->
+
+<!-- </div> -->
+
+<!-- <div class="noSol01"> -->
+
+<!-- *Add your results here!* -->
+
+<!-- </div> -->
+
+<!-- </div> -->
+
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+#### Fixed effects
+
+<p class="head02">
+Entity and time specific fixed effects using dummy regression and `lm()`
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# fixed effects of lm result (HC robust inference only!)
+lm.etfe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# fixed effects of lm result (HC robust inference only!)
+lm.etfe.dum$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+<!-- * Standard errors are only heteroskedasticity-robust. -->
+<!-- * No adjustment for potential autocorrelation over time periods! -->
+
+* SEs are only heteroskedasticity-robust.
+* No adjustment for potential autocorrelation over time periods!
+* See approach in Task f) for cluster-robust SEs later.
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+#### Interpretation
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<u>General</u>:
+
+* Estimates for the time specific and $N-1$ entity specific dummy variables.
+* The omitted entity (here Alabama) is the reference for the $N-1$  entity specific dummies.
+* Control for unobservable factors that differ across states and time.
+
+<u>Particular</u>:
+
+* Estimated effects shrinks (vs entity specific FE model)
+* SE of estimated effects increases
+* Effect of beer tax is negative but no longer significant (at 5%) based on clustered SEs (see later).
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task f) 
+
+Discuss the importance to use clustered standard errors by comparing only heteroskedasticity-robust standard errors and clustered standard errors. Use clustered standard errors to conduct statistical inference about the time specific effects extracted in Task e).
+
+<hr />
+
+<p class="head02">
+Heteroskedasticity robust SE's only
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# check class of the model object
+class(lm.etfe.dum)
+# HC-robust inference
+lm.etfe.dum$ct[1,]
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# check class of the model object
+class(lm.etfe.dum)
+# HC-robust inference
+lm.etfe.dum$ct[1,]
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* `lm.etfe.dum` is of class `lm`, i.e. it does not recognize the panel structure.
+* $\Rightarrow$ Heteroskedasticity robust SE's only.
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Heteroskedasticity and autocorrelation robust, i.e., clustered SE's
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# check class of the model object
+class(plm.etfe)
+# obtain a summary based on clustered standard errors 
+plm.etfe$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# check class of the model object
+class(plm.etfe)
+# obtain a summary based on clustered standard errors 
+plm.etfe$ct
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* `plm.etfe` is of class `plm`, i.e. it does recognize the panel structure.
+* $\Rightarrow$ Heteroskedasticity and autocorrelation robust SE's, (clustered standard errors).
+
+</div>
+<!--..........................................................................-->
+
+<p class="head02">
+Clustered SE's for `lm` objects
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# estimate again using lm function (include no intercept, N=48 state dummies and T-1=6 time dummies)
+lm.etfe.dum.xx <- lm(fatal_rate ~ beertax + year + state - 1, data = fat.dat)
+# fixed effects of lm result (HC robust inference only!)
+coeftest(lm.etfe.dum.xx, vcov=vcovCL(lm.etfe.dum.xx, cluster = ~ state, cadjust = FALSE, type = "HC1"))
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=TRUE}
+# estimate again using lm function (include no intercept, N=48 state dummies and T-1=6 time dummies)
+lm.etfe.dum.xx <- lm(fatal_rate ~ beertax + year + state - 1, data = fat.dat)
+# fixed effects of lm result (HC robust inference only!)
+coeftest(lm.etfe.dum.xx, vcov=vcovCL(lm.etfe.dum.xx, cluster = ~ state, cadjust = FALSE, type = "HC1"))
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* Use `vcovCL()` to compute clustered SE's for `lm` objects.
+* Results are slightly different than the results of the `plm` object.
+* The difference is due to different small sample adjustments and vanishes for increasing sample size.
+
+<!-- <div class="showSol01"> -->
+
+<!-- * Use `vcovCL()` to compute clustered SE's for `lm` objects. -->
+<!-- * Results are slightly different than the results of the `plm` object. -->
+<!-- * The difference is due to different estimation strategies dummy regression for `lm` and within transformation for `plm` object. -->
+
+<!-- </div> -->
+
+<!-- <div class="noSol01"> -->
+
+<!-- *Add your results here!* -->
+
+<!-- </div> -->
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* Assuming no correlation in the residuals across time:
+  * SE of $0.25$: Significant effect of $Tax$ at $5\%$.
+* Allowing for correlation in the residuals across time using clustered SE
+  * SE of $0.35$: No rejection of $H_0: \beta_1 = 0$ at $5\%$.
+* For the computation of clustered SE's see Appendix 10.2 Stock \& Watson.  
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your results here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Somme Illustration
+
+The plot below shows the fitting of the entity fixed effects model estimated in Task d)
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+
+ii <- 5
+jj <- 6
+kk <- 7
+
+plot(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[ii]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[ii]],
+     col = "blue",
+     xlab = "beertax",
+     ylab = "fatality",
+     ylim = c(1,3),
+     xlim = c(0.1,0.3),
+     type = "b")
+lines(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[jj]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[jj]],
+     col = "red",
+     type = "b")
+lines(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[kk]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[kk]],
+     col = "darkgreen",
+     type = "b")
+abline(coef = c(lm.efe.dum$ct[ii+1,1], lm.efe.dum$ct[1,1]), col = "blue")
+abline(coef = c(lm.efe.dum$ct[jj+1,1], lm.efe.dum$ct[1,1]), col = "red")
+abline(coef = c(lm.efe.dum$ct[kk+1,1], lm.efe.dum$ct[1,1]), col = "darkgreen")
+legend("topright",
+       legend = levels(fat.dat$state)[c(ii,jj,kk)],
+       col = c("blue", "red", "darkgreen"),
+       lty = c(1,1,1),
+       inset = 0.01)
+
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+
+ii <- 5
+jj <- 6
+kk <- 7
+
+plot(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[ii]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[ii]],
+     col = "blue",
+     xlab = "beertax",
+     ylab = "fatality",
+     ylim = c(1,3),
+     xlim = c(0.1,0.3),
+     type = "b")
+lines(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[jj]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[jj]],
+     col = "red",
+     type = "b")
+lines(x = fat.dat$beertax[fat.dat$state == levels(fat.dat$state)[kk]],
+     y = fat.dat$fatal_rate[fat.dat$state == levels(fat.dat$state)[kk]],
+     col = "darkgreen",
+     type = "b")
+abline(coef = c(lm.efe.dum$ct[ii+1,1], lm.efe.dum$ct[1,1]), col = "blue")
+abline(coef = c(lm.efe.dum$ct[jj+1,1], lm.efe.dum$ct[1,1]), col = "red")
+abline(coef = c(lm.efe.dum$ct[kk+1,1], lm.efe.dum$ct[1,1]), col = "darkgreen")
+legend("topright",
+       legend = levels(fat.dat$state)[c(ii,jj,kk)],
+       col = c("blue", "red", "darkgreen"),
+       lty = c(1,1,1),
+       inset = 0.01)
+
+```
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!-- <hr /> -->
+
+<!-- ## Literature -->
+
+<!-- <div id="refs"></div> -->
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+//// See: https://www.w3schools.com/jsref/met_element_remove.asp
+//// Remove all solutions from html
+//var i, Sol01;
+//Sol01 = document.getElementsByClassName("showSol01");
+//for (i = 0; i < Sol01.length; i++) {
+//  //Sol01[i].remove();
+//  Sol01[i].parentNode.removeChild(Sol01[i]);
+//}
+
+
+
+// swith from "bloc" to "none"
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none";
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block";
+}
+
+
+
+
+
+// Hide all solutions (on cklick)
+function hideAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+// Show all solutions (on click)
+function showAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+
+// Hide exclude
+var exc;
+exc = document.getElementById("Exc01");
+exc.style.display = "none";
+
+var exc;
+exc = document.getElementById("Exc02");
+exc.style.display = "none";
+
+
+  
+</script>
+
+````
