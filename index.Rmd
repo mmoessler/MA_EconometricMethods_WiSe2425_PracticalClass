@@ -1,0 +1,433 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+bibliography: [./assets/Ma_EconometricMethods_Literature.bib]
+biblio-style: apalike
+link-citations: no
+nocite: | 
+  @StockWatson2020Introduction
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+# remotes::install_github("rlesur/klippy")
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+# Approach
+
+<div style="margin-left: 20pt">
+
+This *Learning Module* contains the implementation of the empirical analysis of the *Exercise Sheets* of the course *Econometric Methods in Business and Economics* in <span class="R">R</span>.
+
+Use the *links* below to get to the implementation of the respective *Exercise Sheet*.
+
+Note, for each new *Exercise Sheet* another *link* will be added. Thus, the content of the *Learning Module* will expand during the semester.
+
+Further details will be provided in the *Practical Class*.
+
+</div>
+
+
+
+<!--..........................................................................-->
+<hr />
+
+# Installation of and short Introduction to <span class="R">R</span>
+
+<div style="margin-left: 20pt">
+
+This link contains information on the [installation of <span class="R">R</span>](./00_RInstallation_XX.html).
+
+This link contains a very short [introduction to <span class="R">R</span>](./00_RBasics_XX.html). 
+
+</div>
+
+
+
+<!--..........................................................................-->
+<hr />
+
+# Exercise Sheets
+
+<div style="margin-left: 10pt">
+
+<table style="width:100%">
+  <tr>
+    <th style="width:4%"></th>
+    <th style="width:25%"></th>
+    <th style="width:59%"></th>
+    <th style="width:12%"></th>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>1)</span>
+    </td>
+    <td>
+    Exercise Sheet No 01:
+    </td>
+    <td>
+    California Test Score Data Set
+    </td>
+    <td>
+    &#10140; [Link](01_ExerciseSheet_No01_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>2)</span>
+    </td>
+    <td>
+    Exercise Sheet No 02:
+    </td>
+    <td>
+    Linear Regression with One Regressor (Part 1)
+    </td>
+    <td>
+    &#10140; [Link](02_ExerciseSheet_No02_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>3)</span>
+    </td>
+    <td>
+    Exercise Sheet No 03:
+    </td>
+    <td>
+    Linear Regression with One Regressor (Part 2)
+    </td>
+    <td>
+    &#10140; [Link](03_ExerciseSheet_No03_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>4)</span>
+    </td>
+    <td>
+    Exercise Sheet No 04:
+    </td>
+    <td>
+    Linear Regression with One Regressor (Part 3)
+    </td>
+    <td>
+    &#10140; [Link](04_ExerciseSheet_No04_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>5)</span>
+    </td>
+    <td>
+    Exercise Sheet No 05:
+    </td>
+    <td>
+    Linear Regression with Multiple Regressors (Part 1)
+    </td>
+    <td>
+    &#10140; [Link](05_ExerciseSheet_No05_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>6)</span>
+    </td>
+    <td>
+    Exercise Sheet No 06:
+    </td>
+    <td>
+    Linear Regression with Multiple Regressors (Part 2)
+    </td>
+    <td>
+    &#10140; [Link](06_ExerciseSheet_No06_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>7)</span>
+    </td>
+    <td>
+    Exercise Sheet No 07:
+    </td>
+    <td>
+    Linear Regression with Multiple Regressors (Part 3)
+    </td>
+    <td>
+    &#10140; [Link](07_ExerciseSheet_No07_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>8)</span>
+    </td>
+    <td>
+    Exercise Sheet No 08:
+    </td>
+    <td>
+    Regression Analysis with Panel Data
+    </td>
+    <td>
+    &#10140; [Link](08_ExerciseSheet_No08_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>9)</span>
+    </td>
+    <td>
+    Exercise Sheet No 09:
+    </td>
+    <td>
+    Regression Analysis with a Binary Dependent Variable
+    </td>
+    <td>
+    &#10140; [Link](09_ExerciseSheet_No09_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>10)</span>
+    </td>
+    <td>
+    Exercise Sheet No 10:
+    </td>
+    <td>
+    Instrumental Variable Regression (Mock Exam Part II)
+    </td>
+    <td>
+    &#10140; [Link](10_ExerciseSheet_No10_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>11)</span>
+    </td>
+    <td>
+    Exercise Sheet No 11:
+    </td>
+    <td>
+    Regression Analysis of Time Series Data (Part 1)
+    </td>
+    <td>
+    &#10140; [Link](11_ExerciseSheet_No11_XX.html)
+    </td>
+  </tr>
+  <!-- ..... -->
+  <tr style="border: 2px solid tomato">
+    <td style="text-align:center">
+    <span>12)</span>
+    </td>
+    <td>
+    Exercise Sheet No 12:
+    </td>
+    <td>
+    Regression Analysis of Time Series Data (Part 2)
+    </td>
+    <td>
+    &#10140; [Link](12_ExerciseSheet_No12_XX.html)
+    </td>
+  </tr>
+  
+</table>
+
+<!-- <p style="text-indent: 20pt">...</p> -->
+
+<table style="width:100%">
+  <tr>
+    <th style="width:4%"></th>
+    <th style="width:25%"></th>
+    <th style="width:59%"></th>
+    <th style="width:12%"></th>
+  </tr>
+  <!-- ..... -->
+  <tr>
+    <td style="text-align:center">
+    <span>X)</span>
+    </td>
+    <td>
+    Mock Exam Part I:
+    </td>
+    <td>
+    Linear Regression with Multiple Regressors
+    </td>
+    <td>
+    &#10140; [Link](XX_MockExam_TaskNo01_XX.html)
+    </td>
+  </tr>
+
+</table>
+
+</div>
+
+<!--..........................................................................-->
+<hr />
+
+# Facultative Assignment
+
+Please find a solution of the facultative assignment [here](./XX_Assignment_XX.html).
+
+Note, this is a very extensive solution and is only partly representative for the evaluation of the solutions handed in.
+
+<!-- <hr /> -->
+
+<!-- # Mock Take Home Assignment -->
+
+<!-- Please find a mock take home assignment on ILIAS ([GoTo](https://ilias.uni-hohenheim.de/goto.php?target=fold_1176942&client_id=UHOH)) -->
+
+<!-- This mock take home assignment will give you an example how the final assessment in the course will proceed. -->
+
+<!-- Please find the discussion of the mock take home assignment [here](./98_MockTakeHomeAssignment/98_MockTakeHomeAssignment_XX.html). -->
+
+<!--..........................................................................-->
+<!-- <hr /> -->
+
+<!-- # Overview of <span class="R">R</span> functions and packages -->
+
+<!-- An overview of important <span class="R">R</span> <span class="emp01">functions</span> and <span class="emp01">packages</span> can be found [here](./99_FunctionsOverview/99_FunctionsOverview_XX.html). -->
+
+<!-- <span class="emp01">Note, this overview is not complete and thus, not a substitute to the discussion of the exercise sheets above!</span> -->
+
+<!--..........................................................................-->
+<hr />
+
+# Implementation in other statistic software packages
+
+<div style="margin-left: 20pt">
+
+A comparison of the implementation of basic econometric methods in <span class="emp01">R</span>, <span class="emp01">STATA</span> and <span class="emp01">gretl</span> can be found here:
+
+</div>
+
+<center>
+<!-- <span class="emp01">[Implementation in other statistic software packages](./SoftwareImplementation_StockWatson_VXX/index.html)</span></span> -->
+<span class="emp01">[Implementation in other statistic software packages](https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1857407/SoftwareImplementation_StockWatson/index.html)</span></span>
+
+<span class="emp01">Note, additional support is only provided for <span class="R">R!</span></span>
+</center>
+
+<!-- .......................................................................... -->
+<hr />
+
+# Illustrations
+
+<div style="margin-left: 20pt">
+
+[Illustration of hypothesis test](./illustration-tool/sim-hyp-tes-ill/sim_hyp_tes_ill.html)
+
+</div>
+
+
+
+<!--..........................................................................-->
+<!-- <hr /> -->
+
+<!-- # Illustrations (using *R-Shiny*) -->
+
+<!-- <span style="font-size: 20pt; text-decoration: underline">Approach</spam> -->
+
+<!-- <div style="margin-left: 20pt"> -->
+
+<!-- To run the application on your local computer, please follow the instructions below: -->
+
+<!-- 1) Sign into *ILIAS* using your university of Hohenheim account. -->
+<!-- 2) Open *R* or *RStudio*. -->
+<!-- 3) Copy the code chunk for the respective illustration (see below) -->
+<!-- 4) Insert the code chunk into your console and hit enter. -->
+<!-- 5) A browser window with the application should open. -->
+<!-- 6) To terminate the application by -->
+<!--     1) closing the browser window -->
+<!--     2) clicking into the console pane and hitting ESC. -->
+
+<!-- </div> -->
+
+<!-- <span style="font-size: 20pt; text-decoration: underline">Illustrations</spam> -->
+
+<!-- <div style="margin-left: 20pt"> -->
+
+<!-- <span style="font-size: 18pt; text-decoration: none">Illustration of Hypothesis Tests</spam> -->
+
+```{r,eval=FALSE,include=FALSE}
+
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1734940/ShinyApplications/RunApp_IllustrationHypothesisTest_ShinyApplication.R")
+
+```
+
+<!-- </div> -->
+
+<!--..........................................................................-->
+<hr />
+
+# Literature
+
+<div style="margin-left: 20pt">
+
+<div id="refs"></div>
+
+</div>
+
+<!--..........................................................................-->
+<hr />
+
+# Contributors
+
+This learning module was developed by:
+
+* Domenic Franjic
+* Markus Mößler
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *ILIAS*](https://ilias.uni-hohenheim.de/goto.php?target=crs_1513853&client_id=UHOH)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````

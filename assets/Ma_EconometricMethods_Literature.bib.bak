@@ -1,0 +1,52 @@
+% Encoding: UTF-8
+
+@Book{StockWatson2020Introduction,
+  author    = {Stock, James H. and Watson, Mark W.},
+  publisher = {Pearson},
+  title     = {Introduction to Econometrics},
+  year      = {2020},
+  edition   = {4th},
+}
+
+@Book{Kabacoff2015R,
+  author    = {Kabacoff, Robert},
+  publisher = {Manning},
+  title     = {R in Action - Data Analysis and Graphics with R},
+  year      = {2015},
+  edition   = {2nd},
+}
+
+@Book{PaarschGolyaev2016Gentle,
+  author    = {Paarsch, Harry J. AND Golyaev, Konstantin},
+  publisher = {MIT Press},
+  title     = {A Gentle Introduction to Effective Computing in Quantitative Research - What Every Research Assistant Should Know},
+  year      = {2016},
+}
+
+@Book{Crawley2012R,
+  author    = {Crawley, Michael J.},
+  publisher = {John Wiley & Sons},
+  title     = {The R Book},
+  year      = {2012},
+  edition   = {2nd},
+}
+
+@Misc{VenablesSmith2020Introduction,
+  author    = {Venables, William N and Smith, David M and R Development Core Team and others},
+  title     = {An introduction to R},
+  year      = {2020},
+  publisher = {Citeseer},
+}
+
+@article{White1980Heteroskedasticity,
+ author = {Halbert White},
+ journal = {Econometrica},
+ number = {4},
+ pages = {817--838},
+ publisher = {[Wiley, Econometric Society]},
+ title = {A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity},
+ volume = {48},
+ year = {1980}
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}
