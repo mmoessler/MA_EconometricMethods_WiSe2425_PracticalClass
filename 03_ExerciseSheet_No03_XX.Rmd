@@ -1,0 +1,1179 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH"
+  dat_nam_01: "CASchools_01_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/texreg_extract_fun.R")
+source("./r-scripts/r_helper_functions.R")
+
+# 4) load data
+cas.dat <- read.table(file = "./data-sets/CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 03 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Linear Regression with One Regressor (Part 2)
+</p>
+
+<!-- We want to analyze the relationship between student performance and class size. For this we use again the data set `CASchool_01_data.txt` and the two variables $test score$ and $STR$ as obtained in the first exercise sheet. -->
+
+We continue our analysis of the relationship between student performance and class size.
+
+For this we use again the data set `CASchool_01_data.txt` and the two variables $test score$ and $STR$ as obtained in the first exercise sheet.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="col_content">
+
+| Variable   | Description            | 
+|:-----------|:-----------------------| 
+| $students$ | Total enrollment.      | 
+| $teachers$ | Number of teachers.    | 
+| $read$     | Average reading score. | 
+| $math$     | Average math score.    | 
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+
+
+
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data sets ``r params$dat_nam_01`` from <span class="R">ILIAS</span> or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+Save the data set into your (working) directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+<!--..........................................................................-->
+## Preparations {.tabset .tabset-fade}
+
+Load data, construct variables and estimation results.
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+cas.dat <- read.table(file = "CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Construct variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# compute STR and append it to cas.dat
+cas.dat$STR <- cas.dat$students/cas.dat$teachers 
+# compute TestScore and append it to cas.dat
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2 
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Estimation results
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+# show results
+lin.mod
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (after some additional transformations!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate the model and assign the result to linear_model
+lin.mod <- lm(score ~ STR, data = cas.dat)
+```
+
+```{r,include=TRUE}
+screenreg(lin.mod,
+       caption = "Estimation Results",
+       caption.above = TRUE,
+       label = "Tab03",
+       stars = numeric(0),
+       custom.model.names = NULL,
+       custom.coef.names = c("intercept","STR"),
+       float.pos = "h",
+       single.row = TRUE,
+       booktabs = TRUE,
+       dcolumn = TRUE,
+       use.packages = FALSE,
+       ci.force = FALSE,
+       digits = 2,
+       include.rsquared = TRUE,
+       include.adjrs = FALSE,
+       include.nobs = FALSE,
+       include.rmse = TRUE,
+       doctype = FALSE)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Summary of estimation results
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# summary of estimation results
+sum.lin.mod <- summary(lin.mod)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="cod_content">
+
+The object `sum.lin.mod` is of class `summary.lm` and contains various summary information about the model fitting.
+
+```{r,include=FALSE,echo=FALSE}
+# informations in sum.lin.mod
+str(sum.lin.mod)
+```
+
+E.g., you can extract the standard error of the regression (SER), $R^2$, and adjusted $R^2$.
+
+These information can be extracted using the `$` notation.
+
+```{r,include=TRUE,echo=TRUE}
+# standard error of the regression
+sum.lin.mod$sigma
+# R^2
+sum.lin.mod$r.squared
+# adjusted R^2
+sum.lin.mod$adj.r.squared
+```
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+## Task a) 
+
+Related to the `father's question' from the lecture predict the variable $test score$ for a district with 16 students per teacher and for a district with 21 students per teacher. Calculate the out-of-sample and the in-sample prediction error if possible.
+
+<hr />
+
+<p class="head02">
+$\underline{STR=16}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# potential index of STR=16
+ii.16 <- which(cas.dat$STR == 16)
+ii.16 # -> out-of-sample prediction
+# predicted score for STR=16
+pre.16 <- 698.93 - 2.28*16
+pre.16
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# potential index of STR=16
+ii.16 <- which(cas.dat$STR == 16)
+ii.16 # -> out-of-sample prediction
+# predicted score for STR=16
+pre.16 <- 698.93 - 2.28*16
+paste("predicted score (STR=16): ", round(pre.16,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+$\underline{STR=21}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# potential index of STR=21
+ii.21 <- which(cas.dat$STR == 21)
+ii.21 # -> in-sample prediction
+# predicted score for STR=21
+pre.21 <- 698.93 - 2.28*21
+pre.21
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# potential index of STR=21
+ii.21 <- which(cas.dat$STR == 21)
+ii.21 # -> in-sample prediction
+# predicted score for STR=21
+pre.21 <- 698.93 - 2.28*21
+paste("predicted score (STR=21): ", round(pre.21,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+Use the function `which()` to check whether the prediction for $STR=16$ and $STR=21$ is an out-of-sample and the in-sample prediction.
+
+<!-- * There is no observation in the sample for $STR=16$ &#8658; out-of-sample prediction -->
+<!-- * There is an observation in the sample for $STR=21$ &#8658; in-sample prediction -->
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+In-sample prediction error for $\underline{STR=21}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# score for STR=21
+sco.21 <- cas.dat$score[ii.21]
+# in-sample prediction error STR=21
+res.21 <- sco.21-pre.21
+res.21
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# score for STR=21
+sco.21 <- cas.dat$score[ii.21]
+# in-sample prediction error STR=21
+res.21 <- sco.21-pre.21
+paste("in-sample prediction error STR=21: ", round(res.21,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <hr /> -->
+
+<p class="head02">
+Prediction Error (general)
+</p>
+
+\begin{align*}
+\widehat{u}_{i} = Y_{i} - \widehat{Y}_{i}
+\end{align*}
+
+<hr />
+
+<p class="head02">
+Particular:
+</p>
+
+* Prediction of $score$ for $STR=16$:
+    * Out-of-sample prediction $\Rightarrow$ $Y$ is not observable
+    * See: $SER$ for the evaluation of the prediction later
+* Prediction of $score$ for $STR=21$ (In-sample prediction): 
+
+    <!-- * In-sample prediction -->
+    <!-- * `r round(res.21,2)`  -->
+
+\begin{align*}
+\widehat{u}_{i} &= Y_{i} - \widehat{Y}_{i} \\
+&= `r round(res.21,2)`
+\end{align*}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+## Task b)
+
+Based on the information about the fit of the regression line depicted in Table 1 of the exercise sheet evaluate the prediction of task a) and state the least squares assumptions for prediction.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# standard error of the regression
+ser <- sum.lin.mod$sigma
+# prediction and its accuracy for STR=16
+pre.16 + ser
+pre.16
+pre.16 - ser
+# prediction and its accuracy for STR=21
+pre.21 + ser
+pre.21
+pre.21 - ser
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# standard error of the regression
+ser <- sum.lin.mod$sigma
+# prediction and its accuracy for STR=16
+paste("STR=16 (upp): ", round(pre.16 + ser,2), sep="")
+paste("STR=16 (mid): ", round(pre.16,2), sep="")
+paste("STR=16 (low): ", round(pre.16 - ser,2), sep="")
+# prediction and its accuracy for STR=21
+paste("STR=21 (upp): ", round(pre.21 + ser,2), sep="")
+paste("STR=21 (mid): ", round(pre.21,2), sep="")
+paste("STR=21 (low): ", round(pre.21 - ser,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Prediction Accuracy (proposal)
+</p>
+
+* Use standard deviation of the out-of-sample / in-sample prediction error (unknown).
+* Estimate the standard deviation of the in-sample prediction error, i.e., standard error of the regression $SER$.
+
+<!-- S&W, 2020, p. 155 -->
+
+<!-- Because no prediction is perfect, a prediction should be accompanied by an  -->
+<!-- estimate of its accuracy—that is, by an estimate of how accurate the prediction  -->
+<!-- might reasonably be expected to be. A natural measure of that accuracy is the stan- -->
+<!-- dard deviation of the out-of-sample prediction error, Y - Yn. Because Y is not  -->
+<!-- known, this out-of-sample standard deviation cannot be estimated directly. If, how- -->
+<!-- ever, the observation being predicted is drawn from the same population as the  -->
+<!-- data used to estimate the regression coefficients, then the standard deviation of the  -->
+<!-- out-of-sample prediction error can be estimated using the sample standard devia- -->
+<!-- tion of the in-sample prediction error, which is the standard error of the regression.  -->
+<!-- A common way to report a prediction and its accuracy is as the prediction { the  -->
+<!-- SER—that is, Yn { s u . More refined measures of prediction accuracy are intro- -->
+<!-- duced in Chapter 14. -->
+
+<p class="head02">
+Results Application
+</p>
+
+$\underline{STR=16}$:
+
+\begin{align*}
+&\phantom{:} \left[`r round(pre.16,2)` - `r round(ser,2)`, `r round(pre.16,2)` + `r round(ser,2)`\right] \\
+&\phantom{:} \left[`r round(pre.16,2) - round(ser,2)`, `r round(pre.16,2) + round(ser,2)`\right]
+\end{align*}
+
+$\underline{STR=21}$:
+
+\begin{align*}
+&\phantom{:} \left[`r round(pre.21,2)` - `r round(ser,2)`, `r round(pre.21,2)` + `r round(ser,2)`\right] \\
+&\phantom{:} \left[`r round(pre.21,2) - round(ser,2)`, `r round(pre.21,2) + round(ser,2)`\right]
+\end{align*}
+
+<!-- \begin{align*} -->
+<!-- STR=16 \!\! &: \left[`r round(pre.16-ser,2)`,`r round(pre.16+ser,2)`\right] \\ -->
+<!-- STR=21 \!\! &: \left[`r round(pre.21-ser,2)`,`r round(pre.21+ser,2)`\right] -->
+<!-- \end{align*} -->
+
+<p class="head02">
+Least-Squares Assumptions for Prediction
+</p>
+
+1. Out-of-sample observation $\left(X^{OOS},Y^{OOS}\right)$ is drawn from the same distribution as the estimation sample, i.e. in-sample observations $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$.
+2. $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$ are i.i.d.
+3. Large outliers in $X$ and/or $Y$ are rare.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+```{r,eval=FALSE,include=FALSE,echo=FALSE}
+
+
+
+<div class="Exc01">
+
+## Task c)
+
+Describe the problem of causal inference related to the `superintendent's question' and state the necessary least squares assumptions accordingly.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+*Add your interpretation here!*
+
+</div>
+<!--..........................................................................-->
+
+</div>
+
+
+
+
+
+<div class="Exc01">
+
+## Task d)
+
+Discuss the role of the sampling distribution of the OLS estimator for the slope coefficient in the context of the linear regression model. How can the sampling distribution of the OLS estimator for the slope parameter be derived? What is the practical usage of these theoretical results?
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+*Add your interpretation here!*
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+## Else
+
+<hr />
+
+<p class="head02">
+Derivation Sampling Distribution of OLS Estimator (Slope Coefficient - sketch)
+</p>
+
+<!-- <hr /> -->
+
+<!-- <p class="head02"> -->
+<!-- Representation of $\widehat{\beta}_1$ [see @StockWatson2019Introduction, pp. 173-174] -->
+<!-- </p> -->
+
+<span class="head02">Representation of $\widehat{\beta}_1$</span> [see @StockWatson2019Introduction, pp. 173-174]
+
+\begin{align*}
+\widehat{\beta}_1 = \beta_1 + \frac{\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)u_i}{\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)^{2}} \;\;\;\;\; (1)
+\end{align*}
+
+<hr />
+
+<p class="head02">
+Unbiasedness
+</p>
+
+Take conditional expectation of Equation 1 above, such that,
+
+\begin{align*}
+\mathrm{E}\left(\widehat{\beta}_1|X_1,...,X_n\right) = \beta_1 + \frac{\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)\mathrm{E}\left(u_i|X_1,...,X_n\right)}{\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)^{2}},
+\end{align*}
+
+with,
+
+* $\mathrm{E}\left(u|X=x\right)=0$,
+* $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$ are i.i.d.,
+
+so,
+
+\begin{align*}
+\mathrm{E}\left(u_i|X_1,...,X_n\right)=0,
+\end{align*}
+
+such that,
+
+\begin{align*}
+\mathrm{E}\left(\widehat{\beta}_1|X_1,...,X_n\right) = \beta_1.
+\end{align*}
+
+Because $\widehat{\beta}_1$ is unbiased given $X_1,..., X_n$, it is unbiased after averaging over all samples $X_1,..., X_n$.
+
+\begin{align*}
+\mathrm{E}\left(\widehat{\beta}_1\right) = \mathrm{E}\left(\mathrm{E}\left(\widehat{\beta}_1|X_1,...,X_n\right)\right) = \beta_1.
+\end{align*}
+
+<hr />
+
+<p class="head02">
+Consistency
+</p>
+
+Take probability limit of Equation 1 above, such that,
+
+\begin{align*}
+\mathrm{plim}\left(\widehat{\beta}_1\right) = \beta_1 + \frac{\mathrm{plim}\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)u_i\right)}{\mathrm{plim}\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)^{2}\right)},
+\end{align*}
+
+Thus, invoke *LLN*:
+
+* Numerator: $\mathrm{plim}\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)u_i\right)=\mathrm{Cov}\left(X_i, u_i\right)=0$
+    * Remember: $\mathrm{E}\left(u_i|X_1,...,X_n\right)=0 \Rightarrow \mathrm{Cov}\left(X_i, u_i\right)=0$
+* Denominator: $\mathrm{plim}\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)^{2}\right)=\mathrm{Var}\left(X_i\right)$
+* Overall: $\mathrm{plim}\left(\widehat{\beta}_1\right) = \beta_1$
+* Note: $\mathrm{Var}\left(X_i\right)$ and $\mathrm{Var}\left(u_i\right)$ needs to be finite
+
+<hr />
+
+<p class="head02">
+Large-sample Normal distribution
+</p>
+
+<!-- <p class="head03"> -->
+<!-- Numerator of Equation 1 (above) -->
+<!-- </p> -->
+
+<span class="head03">Numerator</span> (of Equation 1 above)
+
+\begin{align*}
+\nu_i &= \left(X_i-\mu_X\right)u_i \\
+\overline{\nu} &= \frac{1}{n}\sum_{i=1}^{n}\left(X_i-\overline{X}\right)u_i,
+\end{align*}
+
+with $\mathrm{E}\left(u|X=x\right)=0$,
+
+\begin{align*}
+\mathrm{E}\left(\nu_i\right) &= 0, \\
+\mathrm{Var}\left(\nu_i\right) &= \sigma^2_{\nu} \text{   nonzero but finite},
+\end{align*}
+
+with, $\left(X_{i},Y_{i}\right)$ for $i=1,...,n$ are i.i.d., $\nu_i$ is also i.i.d. for $i=1,...,n$.
+
+Thus, invoke *CLT*:
+
+\begin{align*}
+\overline{\nu} \sim N\left(0,\frac{\sigma^2_{\nu}}{n}\right) \text{   approximately}
+\end{align*}
+
+<!-- <p class="head03"> -->
+<!-- Denominator of Equation 1 (above) -->
+<!-- </p> -->
+
+<span class="head03">Denominator</span> (of Equation 1 above)
+
+Sample variance, i.e., a consistent estimator for $\mathrm{Var}\left(X\right)$
+
+<!-- <p class="head03"> -->
+<!-- Overall -->
+<!-- </p> -->
+
+<span class="head03">Overall</span> (of Equation 1 above)
+
+
+\begin{align*}
+\widehat{\beta}_1 &\sim N\left(\beta_1,\sigma^2_{\widehat{\beta}_1}\right) \text{   approximately} \\
+\sigma^2_{\widehat{\beta}_1} &= \frac{\sigma^2_{\overline{\nu}}}{\left(\sigma_X^2\right)^2}
+\end{align*}
+
+</div>
+
+
+  
+```
+
+
+
+
+
+<!--..........................................................................-->
+## Task c) 
+
+Replicate the results in Table 1 of the exercise sheet and discuss the role of the robust standard errors depicted the table.
+
+<hr />
+
+<p class="head02">
+Estimate linear regression model (same as task a))
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+# show results
+summary(lin.mod)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+# show results
+summary(lin.mod)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Scatter Plot with Fitted Regression Line
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow = c(1,1),
+    mar = c(5,5,3,2))
+# scatter plot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lin.mod, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow = c(1,1),
+    mar = c(5,5,3,2))
+# scatter plot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lin.mod, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Extract variance-covariance matrix of estimates
+</p>
+
+<hr />
+
+<p class="head03">
+Standard error based on homoskedasticity only
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# install package once
+#install.packages("sandwich")
+# load package every session
+library(sandwich)
+# extract standard errors based on homoskedasticity
+vc.ord.01 <- vcovHC(lin.mod, type = "const")
+se.ord.01 <- sqrt(diag(vc.ord.01))
+se.ord.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# install package once
+#install.packages("sandwich")
+# load package every session
+library(sandwich)
+# extract standard errors based on homoskedasticity
+vc.ord.01 <- vcovHC(lin.mod, type = "const")
+se.ord.01 <- sqrt(diag(vc.ord.01))
+se.ord.01
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Standard error robust w.r.t. heteroskedasticity
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# load package every session
+library(sandwich)
+# extract heteroskedasticity-robust standard erros (based on White)
+vc.rob.01 <- vcovHC(lin.mod, type = "HC1")
+se.rob.01 <- sqrt(diag(vc.rob.01))
+se.rob.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# load package every session
+library(sandwich)
+# extract heteroskedasticity-robust standard erros (based on White)
+vc.rob.01 <- vcovHC(lin.mod, type = "HC1")
+se.rob.01 <- sqrt(diag(vc.rob.01))
+se.rob.01
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+* Download (once) and load (every session) the *package* `sandwich` to use the *function* `vcovHC()` to extract robust standard errors for the estimated coefficients.
+* Use the *function* `vcovHC` to extract the variance-covariance matrix of the estimated coefficients, here, $\beta_0$ and $\beta_1$, based on the assumption of homoskedasticity only (`type="const"`) and robust w.r.t to heteroskedasticity (`type="HC1"`).
+* Use the *functions* `sqrt()` and `diag()` to get the standard errors based on homoskedasticity only (`se.ord.01`) and robust w.r.t. heteroskedasticity (`se.rob.01`).
+
+
+<!-- * Note, the construction of the robust variance-covariance-matrix for `type="HC0"` is based on @White1980Heteroskedasticity. -->
+
+<!-- * The objects `vc.ord.01` and `vc.rob.01` contain the variance-covariance matrix of the estimated coefficients, here, $\beta_0$ and $\beta_1$, based on the assumption of homoskedasticity only (`vc.ord.01`) and robust w.r.t to heteroskedasticity (`vc.rob.01`). -->
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Standard error robust w.r.t. heteroskedasticity: Use *wrapper function* `lm_ct_fun()` from above
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# call wrapper function for robust inference
+lin.mod.rob <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+# print results
+lin.mod.rob$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# call wrapper function for robust inference
+lin.mod.rob <- lm_ct_fun(score ~ STR, data = cas.dat, hc.type = "HC1")
+# print results
+lin.mod.rob$ct
+```
+</div>
+<!--..........................................................................-->
+
+
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Role of robust standard errors* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Sampling distribution of $\widehat{\beta}_1$
+</p>
+
+\begin{align}
+\widehat{\beta}_1 \sim N\left(\beta_1, \sigma^2_{\widehat{\beta}_1} \right) \;\;\; \text{(approximately)}
+\end{align}
+
+with (heteroskedasticity robust)
+
+\begin{align}
+\sigma^2_{\widehat{\beta}_1}=\frac{1}{n}\frac{\mathrm{var}\left[\left(X_i-\mu_X\right)u_i\right]}{\left[\mathrm{var}\left(X_i\right)\right]^2}
+\end{align}
+
+under homoskedasticity
+
+\begin{align}
+\tilde{\sigma}^2_{\widehat{\beta}_1}=\frac{1}{n}\frac{\mathrm{var}\left[u_i\right]}{\left[\mathrm{var}\left(X_i\right)\right]^2}
+\end{align}
+
+<p class="head02">
+Important
+</p>
+
+* Using heteroskedasticity robust SE is more complicated but more robust.
+* Heteroskedasticity robust SE are readily available in almost any statistics software.
+* $\Rightarrow$ In case of doubt use heteroskedasticity robust standard error!
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+
+<!-- <hr /> -->
+
+<!-- ### Literature -->
+
+<!-- <div id="refs"></div> -->
+
+<!--..........................................................................-->
+# 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start* of *Practical Class*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+// swith from "bloc" to "none"
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none";
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block";
+}
+
+// === OLD === //
+
+// Hide all solutions (on cklick)
+function hideAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "none";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "block";
+  }
+  
+}
+
+// Show all solutions (on click)
+function showAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+// Hide exclude
+var exc;
+exc = document.getElementById("Exc01");
+exc.style.display = "none";
+
+var exc;
+exc = document.getElementById("Exc02");
+exc.style.display = "none";
+
+</script>
+
+````
