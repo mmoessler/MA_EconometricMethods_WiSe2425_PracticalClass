@@ -1,0 +1,1142 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH"
+  dat_nam_01: "CASchools_01_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+
+# 3) load r-scripts
+source("./r-scripts/texreg_extract_fun.R")
+source("./r-scripts/r_helper_functions.R")
+
+# 4) load data
+cas.dat <- read.table(file = "./data-sets/CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Exercise Sheet No 02 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Linear Regression with One Regressor (Part 1)
+</p>
+
+We want to analyze the relationship between student performance and class size. For this we use again the data set `CASchool_01_data.txt` and the two variables $test score$ and $STR$ as obtained in the first exercise sheet.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="col_content">
+
+| Variable   | Description            | 
+|:-----------|:-----------------------| 
+| $students$ | Total enrollment.      | 
+| $teachers$ | Number of teachers.    | 
+| $read$     | Average reading score. | 
+| $math$     | Average math score.    | 
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data sets ``r params$dat_nam_01`` from <span class="R">ILIAS</span> or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+Save the data set into your (working) directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+<!--..........................................................................-->
+## Data/Variables
+
+Load data and construct variables.
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# load the data set
+cas.dat <- read.table(file = "CASchools_01_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      colClasses = c("numeric","numeric","numeric","numeric"))
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Construct variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# compute STR and append it to cas.dat
+cas.dat$STR <- cas.dat$students/cas.dat$teachers 
+# compute TestScore and append it to cas.dat
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2 
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+
+
+
+
+<!--..........................................................................-->
+## Task a) 
+
+Specify the population regression model using $score$ as dependent variable and $STR$ as independent variable. Estimate the intercept and the slope parameter. Interpret the results depicted in Table 1 on the exercise sheet.
+
+<hr />
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+# show results
+lin.mod
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+# show results
+lin.mod
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (after some additional transformations!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# estimate the model and assign the result to lin.mod
+lin.mod <- lm(score ~ STR, data = cas.dat)
+```
+
+```{r,include=TRUE}
+screenreg(lin.mod,
+       caption = "Estimation Results",
+       caption.above = TRUE,
+       label = "Tab03",
+       stars = numeric(0),
+       custom.model.names = NULL,
+       custom.coef.names = c("intercept","STR"),
+       float.pos = "h",
+       single.row = TRUE,
+       booktabs = TRUE,
+       dcolumn = TRUE,
+       use.packages = FALSE,
+       ci.force = FALSE,
+       digits = 2,
+       include.rsquared = TRUE,
+       include.adjrs = FALSE,
+       include.nobs = FALSE,
+       include.rmse = TRUE,
+       doctype = FALSE)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+Use the function `lm()` to fit a linear model.
+
+The resulting object, i.e., here, `lin.mod` is of class `lm` and contains various information about the model fitting.
+
+```{r,include=FALSE,echo=FALSE}
+# informations in lin.mod
+str(lin.mod)
+```
+
+E.g., you can extract coefficients estimates, residuals and fitted values.
+
+```{r,include=TRUE,echo=TRUE}
+# coefficients
+lin.mod$coefficients
+# residuals
+head(lin.mod$residuals)
+# fitted values
+head(lin.mod$fitted.values)
+```
+
+The most important information can be extracted using the general `summary()` function.
+
+```{r,include=TRUE,echo=TRUE}
+# summary
+summary(lin.mod)
+```
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Regression Model Specification* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <hr /> -->
+
+<p class="head02">
+Regression model
+</p>
+
+\begin{align*}
+Y_i &= \beta_0 + \beta_1 X_i + u_i \\
+score &= \beta_0 + \beta_1 STR + \text{error}
+\end{align*}
+
+<hr />
+
+<p class="head02">
+Population regression line/function
+</p>
+
+\begin{align*}
+Y_i &= \beta_0 + \beta_1 X_i \\
+score &= \beta_0 + \beta_1 STR
+\end{align*}
+
+<!-- <hr /> -->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add the population regression model here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: OLS Estimator* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <hr /> -->
+
+<p class="head02">
+Ordinary Least Squares (OLS) estimator
+</p>
+
+\begin{align*}
+min_{\beta_0,\beta_1} \sum^n_{i = 1} \left[Y_i - \left(\beta_0 + \beta_1 X_i\right)\right]^2
+\end{align*}
+
+$\Rightarrow$ The Result of this minimization is the OLS estimator for $\beta_0$ and $\beta_1$, denoted $\hat{\beta}_0$ and $\hat{\beta}_1$.
+
+<hr />
+
+<p class="head02">
+Sample regression line/function
+</p>
+
+\begin{align*}
+\widehat{score} &= \hat{\beta}_0 + \hat{\beta}_1  STR \\
+\widehat{score} &= `r round(lin.mod$coefficients[c("(Intercept)")],2)` + \left(`r round(lin.mod$coefficients[c("STR")],2)`\right)  STR \\
+\end{align*}
+
+<!-- <hr /> -->
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: Results* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<!-- <hr /> -->
+
+<!-- <p class="head02"> -->
+<!-- In general $\underline{\left(\Delta STR=1\right)}$ -->
+<!-- </p> -->
+
+<span style="text-decoration:underline; font-size:18pt;">In general</span> $\left(\Delta STR=1\right)$:
+
+* $\hat{\beta}_0$: No reasonable interpretation here.
+* $\hat{\beta}_1$: Increase/difference of the class size by one student, i.e., $\Delta STR=1$, relates to a change/difference in score of on average `r round(lin.mod$coefficients[c("STR")],2)` points.
+
+<hr />
+
+<!-- <p class="head02"> -->
+<!-- In particular $\underline{\left(\Delta STR=2\right)}$ -->
+<!-- </p> -->
+
+<span style="text-decoration:underline; font-size:18pt;">In particular</span> $\left(\Delta STR=2\right)$:
+
+* $\Delta STR=2$: Increase from 50th percentile to almost 90th percentile ($\Rightarrow$ large change!)
+* $\Delta score=`r 2*round(lin.mod$coefficients[c("STR")],2)`$: Decrease from 50th percentile to almost 40th percentile ($\Rightarrow$ small change!)
+
+<!-- <hr /> -->
+
+<span style="text-decoration:underline; font-size:18pt;">Remember</span>:
+
+```{r, include=FALSE}
+
+# compute sample averages of STR and score
+avg.str <- mean(cas.dat$STR) 
+avg.sco <- mean(cas.dat$score)
+# compute sample standard deviations of STR and score
+sd.str <- sd(cas.dat$STR) 
+sd.sco <- sd(cas.dat$score)
+# set up a vector of percentiles and compute the percentiles 
+per <- c(0.10, 0.25, 0.4, 0.5, 0.6, 0.75, 0.9)
+per.str <- quantile(cas.dat$STR, per)
+per.sco <- quantile(cas.dat$score, per)
+# gather everything in a data.frame 
+dis.sum.02 <- data.frame(avg = c(avg.str, avg.sco), 
+                         sd = c(sd.str, sd.sco), 
+                         per = rbind(per.str, per.sco))
+
+cas.dat.sum.tab.02 <- format(round(cbind(dis.sum.02),2),2)
+colnames(cas.dat.sum.tab.02) <- c("Average","SD","10%","25%","40%","50%","60%","75%","90%")
+rownames(cas.dat.sum.tab.02) <- c("STR","score")
+
+```
+
+```{r,include=TRUE,results='asis'}
+cas.dat.sum.tab.02 %>%
+  kable("html",booktabs=T,escape=F,align="r") %>%
+  add_header_above(c(" ", " " = 2, "Percentile" = 7)) %>%
+  kable_styling(latex_options="hold_position") %>%
+  row_spec(0,align="c")
+```
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+## Task b)
+
+Based on the estimation results depicted in Table 1 of the exercise sheet calculate the predicted value and the residual for the district Del Paso Heights, Sacramento, CA, for which $STR=20.81$ and $score=612.65$.
+
+<hr />
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# index of Del Paso Heights (dph), Sacramento, CA
+ii.dph <- which(round(cas.dat$STR, 2) == 20.81)
+# score of Del Paso Heights (dph), Sacramento, CA
+sco.dph <- cas.dat$score[ii.dph] # (=612.65)
+# predicted score for Del Paso Heights
+pre.dph <- 698.93-2.28*20.81
+pre.dph
+# residual value
+res.dph <- sco.dph - pre.dph
+res.dph
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# index of Del Paso Heights (dph), Sacramento, CA
+ii.dph <- which(round(cas.dat$STR, 2) == 20.81)
+# score of Del Paso Heights (dph), Sacramento, CA
+sco.dph <- cas.dat$score[ii.dph] # (=612.65)
+# predicted score for Del Paso Heights
+pre.dph <- 698.93-2.28*20.81
+paste("predicted sore: ", round(pre.dph, 2), sep = "")
+# residual value
+res.dph <- sco.dph-pre.dph
+paste("residual value: ", round(res.dph, 2), sep = "")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+Use the function `which()` to get the index which fulfills a certain condition, here, rounded $STR$ equals $20.81$.
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+* Prediction of $score$ for "Del Paso Heights, Sacramento, CA": `r round(pre.dph,2)`
+    * ($\Rightarrow$ in-sample prediction)
+* Residual value for "Del Paso Heights, Sacramento, CA": `r round(res.dph,2)`
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+## Task c)
+
+<hr />
+
+Evaluate the fit of the regression line based on the information depicted in Table 1 of the exercise sheet. Explain the concept of the two measures and interpret the results.
+
+<!-- Regression $R^2$ -->
+
+<hr />
+
+<p class="head02">
+Regression $\underline{R^2}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# calculate explained sum of squares (ESS)
+ess <- sum((fitted(lin.mod) - mean(cas.dat$score))^2)
+ess
+# calculate total sum of squares (TSS)
+tss <- sum((cas.dat$score - mean(cas.dat$score))^2)
+tss
+# compare TSS with (n-1) times variance of score
+tss.chk <- (length(cas.dat$score) - 1)*var(cas.dat$score)
+tss.chk
+# compute R2
+r2 <- ess/tss
+r2
+# or use sum of squared residuals (SSR)
+ssr <- sum(residuals(lin.mod)^2)
+ssr
+# compute R2
+r2.chk <- 1 - ssr/tss
+r2.chk
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# calculate explained sum of squares (ESS)
+ess <- sum((fitted(lin.mod) - mean(cas.dat$score))^2)
+paste("ESS: ", round(ess,2), sep="")
+# calculate total sum of squares (TSS)
+tss <- sum((cas.dat$score - mean(cas.dat$score))^2)
+paste("TSS: ", round(tss,2), sep="")
+# compare TSS with (n-1) times variance of score
+tss.chk <- (length(cas.dat$score)-1)*var(cas.dat$score)
+paste("TSS (check): ", round(tss.chk,2), sep="")
+# compute R2
+r2 <- ess/tss
+paste("R2: ", round(r2,2), sep="")
+# or use sum of squared residuals (SSR)
+ssr <- sum(residuals(lin.mod)^2)
+paste("SSR: ", round(ssr,2), sep="")
+# compute R2
+r2 <- 1- ssr/tss
+paste("R2 (check): ", round(r2,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: $R^2$* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Remember
+</p>
+
+\begin{align}
+  ESS & =  \sum_{i = 1}^n \left( \widehat{Y_i} - \overline{Y} \right)^2,   \\
+  TSS & =  \sum_{i = 1}^n \left( Y_i - \overline{Y} \right)^2,   \\
+  R^2 & = \frac{ESS}{TSS}.
+\end{align}
+
+<p class="head02">
+Here
+</p>
+
+* Fraction of the sample variance of $Y$ (i.e., $score$) explained by (or predicted) by $X$ (i.e., $STR$).
+* `r round(r2,2)*100` percent of the sample variance of $score$ can be explained/predicted by $STR$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!-- Standard Error of the Regression $SER$ -->
+
+<hr />
+
+<p class="head02">
+Standard Error of the Regression $\underline{SER}$
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# calculate sum of squared residuals (SSR) (see above)
+ssr <- sum(residuals(lin.mod)^2)
+ssr
+# calculate standard error of the regression (SER)
+nn <- length(cas.dat$score) # number of observations
+ser <- sqrt(1/(nn-2)*ssr)
+ser
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output (with some additional notes!)* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# calculate sum of squared residuals (SSR) (see above)
+ssr <- sum(residuals(lin.mod)^2)
+paste("SSR: ", round(ssr,2), sep="")
+# calculate standard error of the regression (SER)
+nn <- length(cas.dat$score) # number of observations
+ser <- sqrt(1/(nn-2)*ssr)
+paste("SER: ", round(ser,2), sep="")
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation: $SER$* </button>
+<div class="col_content">
+
+<div style="color: red" class="showSol01">
+
+<p class="head02">
+Remember
+</p>
+
+$$ SER = s_{\widehat{u}} = \sqrt{s_{\widehat{u}}^2} \ \ \ \text{where} \ \ \ s_{\widehat{u} }^2 = \frac{1}{n-2} \sum_{i = 1}^n \hat{u}^2_i = \frac{SSR}{n - 2} $$
+
+<p class="head02">
+Here
+</p>
+
+* Estimator of the standard deviation of the regression error $u_i$. Note, $u_i$ is not observable.
+* Measure of the spread of the observations around the regression line in units of the dependent variable (i.e. $score$).
+* $\Rightarrow$ Rather large spread of the observations around the regression line.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+## Else
+
+<p class="head02">
+Scatter Plot with Fitted Regression Line (revisited)
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatterplot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lin.mod, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="cod_content">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatterplot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+abline(lin.mod, col = "red", lty = 2)
+```
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Note* </button>
+<div class="col_content">
+
+The function `abline()` with an `lm` object as argument  (here: `lin.mod`) extracts...
+
+* first the estimated coefficients of the `lm` object and...
+* second, plots a line based on the estimated coefficients.
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Some additional insights* </button>
+<div class="col_content">
+
+<p class="head03">
+Scatter Plot with Fitted Regression Line (again)
+</p>
+
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# fitted values score head
+cas.dat$score.h <- fitted(lin.mod)
+TT <- nrow(cas.dat)
+# plot parameters
+par(mfrow=c(1, 1),
+    mar=c(5, 5, 3, 2))
+# scatterplot
+plot(cas.dat$STR, cas.dat$score,
+     main = "Scatter Plot of Test Score, Fitted Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)",
+     col = "blue")
+lines(cas.dat$STR, cas.dat$score.h,
+      type = "p",
+      col = "red")
+abline(h = mean(cas.dat$score),
+       col = "black",
+       lty = 2)
+# deviations of fitted scores from the mean
+for (ii in 1:TT) {
+  lines(c(cas.dat$STR[ii], cas.dat$STR[ii]), c(mean(cas.dat$score), cas.dat$score.h[ii]),
+      type = "l",
+      col = "red",
+      lty = 3)
+}
+# deviations of observed scores from the mean
+for (ii in 1:TT) {
+  lines(c(cas.dat$STR[ii], cas.dat$STR[ii]), c(mean(cas.dat$score), cas.dat$score[ii]),
+      type = "l",
+      col = "blue",
+      lty = 3)
+}
+```
+
+<p class="head03">
+Explanation
+</p>
+
+<div style="margin-left: 10pt">
+
+<u>Dots</u>:
+
+* Blue: Observed values $score_i$
+* Red: Fitted values $\widehat{score}_i$
+
+<u>Horizontal dashed line</u>:
+
+* Mean of the observed values $\overline{score}$
+
+<u>Vertical dashed lines</u>:
+
+* Blue: Deviations of the observed values from the mean $\left(score_i - \overline{score}\right)$
+* Red: Deviations of the fitted values from the mean $\left(\widehat{score}_i - \overline{score}\right)$
+
+<u>Interpretation</u>:
+
+* Explained sum of squares (*ESS*) or explained variation of $score_i$ based on the regression model are the square (*red*) deviations.
+* Total sum of squares (*TSS*) or total variation of $score_i$ are the squared (*blue*) deviations.
+* Here, (only) 5% of *TSS* (*blue* squared) can be captured by the model (*red* squared).
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!-- <hr /> -->
+
+<!-- ## Literature -->
+
+<!-- <p class="head01"> -->
+<!-- Literature -->
+<!-- </p> -->
+
+<!-- <div id="refs"></div> -->
+
+<!--..........................................................................-->
+# 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start* of *Practical Class*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+```{r}
+
+library(class)
+train <- rbind(iris3[1:25,,1], iris3[1:25,,2], iris3[1:25,,3])
+test <- rbind(iris3[26:50,,1], iris3[26:50,,2], iris3[26:50,,3])
+cl <- factor(c(rep("s",25), rep("c",25), rep("v",25)))
+knn.k3 <- knn(train, test, cl, k = 3, prob=TRUE)
+attributes(.Last.value)
+
+```
+
+```{r}
+
+score.fac <- as.factor(cas.dat$score)
+score.fac
+
+knn.res <- knn(train = cbind(cas.dat$STR), test = cbind(cas.dat$STR), cl = score.fac, k = 1, prob = TRUE)
+
+attributes(.Last.value)
+
+```
+
+```{r}
+
+ord.id <- order(cas.dat$STR)
+
+head(sort(cas.dat$STR))
+head(cas.dat$STR[ord.id])
+
+
+
+NN <- length(cas.dat$score)
+
+ord.id <- order(cas.dat$score)
+
+k <- 2
+xk <- vector(mode = "list")
+xk[[1]] <- cas.dat$STR[ord.id][1:k]
+
+for (ii in 2:round(NN/k)) {
+  
+  ii.seq <- seq(1, NN, k)
+  
+  ii.seq[ii] + k - 1
+  
+  xk[[ii]] <- cas.dat$STR[ord.id][ii.seq[ii]:(ii.seq[ii] + k - 1)]
+  
+}
+
+xxx <- sapply(xk, mean)
+
+length(xxx)
+
+xxx[1]
+
+xk[[1]]
+
+mean(c(21.40625, 19.50000))
+
+
+
+x <- cas.dat$STR
+y <- cas.dat$score
+k <- 2
+
+
+
+
+
+NN <- length(y)
+ord.id <- order(y)
+
+yk <- vector(mode = "list")
+
+# collapse to mean across k successive values
+yk[[1]] <- y[ord.id][1:k]
+for (ii in 2:round(NN/k)) {
+  ii.seq <- seq(1, NN, k)
+  ii.seq[ii] + k - 1
+  yk[[ii]] <- y[ord.id][ii.seq[ii]:(ii.seq[ii] + k - 1)]
+}
+y.k.means <- sapply(yk, mean)
+
+# expand for plot
+y.k.fit <- cbind(y.k.means) %x% rbind(1,1)
+
+plot(x[ord.id], y.k.fit,
+     col = "blue",
+     ylim = c(600, 720))
+lines(cas.dat$STR, cas.dat$score,
+      type = "p",
+      col = "red")
+grid()
+
+plot(x[ord.id], y.k.fit,
+     col = "blue",
+     ylim = c(600, 720))
+lines(cas.dat$STR, cas.dat$score,
+      type = "p",
+      col = "red")
+grid()
+
+
+plot(seq(1, NN), y.k.fit,
+     col = "black",
+     ylim = c(600, 720))
+lines(seq(1, TT), y[ord.id],
+      type = "l",
+      col = "darkgreen")
+lines(seq(1, TT), cas.dat$score.h[order(cas.dat$score.h)],
+      type = "l",
+      col = "red")
+grid()
+
+
+```
+
+
+
+
+
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+// swith from "bloc" to "none"
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none";
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block";
+}
+
+// === OLD === //
+
+// Hide all solutions (on cklick)
+function hideAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "none";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "block";
+  }
+  
+}
+
+// Show all solutions (on click)
+function showAllSolutions01() {
+
+  var i, Sol01;
+  Sol01 = document.getElementsByClassName("showSol01");
+  for (i = 0; i < Sol01.length; i++) {
+    Sol01[i].style.display = "block";
+  }
+  
+  var i, NoSol01;
+  NoSol01 = document.getElementsByClassName("noSol01");
+  for (i = 0; i < NoSol01.length; i++) {
+    NoSol01[i].style.display = "none";
+  }
+  
+}
+
+// Hide exclude
+var exc;
+exc = document.getElementById("Exc01");
+exc.style.display = "none";
+
+var exc;
+exc = document.getElementById("Exc02");
+exc.style.display = "none";
+
+</script>
+
+````
