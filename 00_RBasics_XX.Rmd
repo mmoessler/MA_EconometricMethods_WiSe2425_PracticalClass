@@ -74,7 +74,7 @@ The <span class="R">RStudio</span> interface is divided into different panes.
 
 <!-- ![](C:/Users/Markus/uni-hohenheim.de/Robert Jung - 520KOneDrive/MA_Lehre/MA_EMBE/MA_EMBE_2122/MA_EconometricMethods_WiSe2122/rstudio.jpg) -->
 
-![](./AdditionalMaterial/rstudio.jpg)
+![](./additional-material/rstudio.jpg)
 
 <!--..........................................................................-->
 <hr />
