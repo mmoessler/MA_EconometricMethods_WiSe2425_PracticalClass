@@ -7,9 +7,11 @@ The material, i.e. the slides, videos and additional material, are designed in s
 These adjustments include:
 
 * Adjust the link to the ILIAS cours in `./index.Rmd`
-* Adjust the link to datasets upload to ILIAS for each exercise sheet, e.g., in `01_ExerciseSheet_No01_XX.Rmd`
+* Adjust the link to datasets upload to ILIAS for each exercise sheet in the yaml header, e.g., in `01_ExerciseSheet_No01_XX.Rmd`
+* Adjust the link to source helper functions from ILIAS in each exercise sheet, e.g., in `01_ExerciseSheet_No01_XX.Rmd` (see below)
+* Adjust the link also in `r-scripts/prepare_r_packages_and_helper_functions.R` and `download_r_helper_functions.R`.
 
-Note on show/hide interpretation:
+## Handling of show/no show of interpretations
 
 * For uploads use:
   * `Sol01[i].style.display = "none";`
@@ -105,3 +107,21 @@ The code chunk below will include the helper functions in `r_helper_functions.R`
 # Include R-helper functions
 source("r_helper_functions.R")
 ```
+
+## Rest
+
+* `./illustration-tool`: Material for linked illustrations, e.g., OVB
+* `./data-sets`: Should be clear
+* `./r-scripts`:
+  * Handle helper functions
+    * `download_r_helper_functions.R`
+    * `prepare_r_packages_and_helper_functions.R`
+    * `r_helper_functions.R`
+  * Wrapper functions to edit texreg table generation
+    * `texreg_extract_fun.R`
+    * ...
+  * `DataPreparation.R`: Helper function for data preparation
+  * Some functions for checks for myself
+    * `R_car_linearHypothesis.R`
+    * `urca_ur_df_fun.R`
+    * `urca_ur_fun.R`
