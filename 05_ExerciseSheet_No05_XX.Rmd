@@ -9,6 +9,7 @@ params:
   dat_nam_01: "CASchools_02_data.txt"
   dat_link_02: "https://ilias.uni-hohenheim.de/goto.php?target=file_1535040_download&client_id=UHOH"
   dat_nam_02: "CPS_02_data.txt"
+  illustration_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1776644/illustration-statistical-concepts/sim-hyp-tes-ill/sim_hyp_tes_ill.html" # fixed!
 editor_options: 
   chunk_output_type: console
 ---
@@ -875,6 +876,16 @@ p-\text{value} &= 2*\Phi\left(-|t^{act}|\right) \\
 
 <hr />
 
+<p class="head03">
+Illustration
+</p>
+
+<div style="margin-left: 20pt">
+[Illustration of hypothesis test](`r params$illustration_link_01`)
+</div>
+
+<hr />
+
 <p class="head02">
 CDF Standard Normal Distribution
 </p>
@@ -1070,7 +1081,15 @@ Note, here:
 
 ```
 
+<hr />
 
+<p class="head02">
+Additional Illustration
+</p>
+
+<div style="margin-left: 20pt">
+[Illustration of hypothesis test](`r params$illustration_link_01`)
+</div>
 
 
 

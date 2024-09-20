@@ -9,6 +9,10 @@ biblio-style: apalike
 link-citations: no
 nocite: | 
   @StockWatson2020Introduction
+params:
+  ilias_course_link: "https://ilias.uni-hohenheim.de/goto.php?target=crs_1513853&client_id=UHOH" # change!
+  implementation_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1857407/SoftwareImplementation_StockWatson/index.html" # change!
+  illustration_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1776644/illustration-statistical-concepts/sim-hyp-tes-ill/sim_hyp_tes_ill.html" # fixed!
 editor_options: 
   chunk_output_type: console
 ---
@@ -304,25 +308,6 @@ Please find a solution of the facultative assignment [here](./XX_Assignment_XX.h
 
 Note, this is a very extensive solution and is only partly representative for the evaluation of the solutions handed in.
 
-<!-- <hr /> -->
-
-<!-- # Mock Take Home Assignment -->
-
-<!-- Please find a mock take home assignment on ILIAS ([GoTo](https://ilias.uni-hohenheim.de/goto.php?target=fold_1176942&client_id=UHOH)) -->
-
-<!-- This mock take home assignment will give you an example how the final assessment in the course will proceed. -->
-
-<!-- Please find the discussion of the mock take home assignment [here](./98_MockTakeHomeAssignment/98_MockTakeHomeAssignment_XX.html). -->
-
-<!--..........................................................................-->
-<!-- <hr /> -->
-
-<!-- # Overview of <span class="R">R</span> functions and packages -->
-
-<!-- An overview of important <span class="R">R</span> <span class="emp01">functions</span> and <span class="emp01">packages</span> can be found [here](./99_FunctionsOverview/99_FunctionsOverview_XX.html). -->
-
-<!-- <span class="emp01">Note, this overview is not complete and thus, not a substitute to the discussion of the exercise sheets above!</span> -->
-
 <!--..........................................................................-->
 <hr />
 
@@ -335,9 +320,7 @@ A comparison of the implementation of basic econometric methods in <span class="
 </div>
 
 <center>
-<!-- <span class="emp01">[Implementation in other statistic software packages](./SoftwareImplementation_StockWatson_VXX/index.html)</span></span> -->
-<span class="emp01">[Implementation in other statistic software packages](https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1857407/SoftwareImplementation_StockWatson/index.html)</span></span>
-
+<span class="emp01">[Implementation in other statistic software packages](`r params$implementation_link_01`)</span></span>
 <span class="emp01">Note, additional support is only provided for <span class="R">R!</span></span>
 </center>
 
@@ -347,48 +330,8 @@ A comparison of the implementation of basic econometric methods in <span class="
 # Illustrations
 
 <div style="margin-left: 20pt">
-
-[Illustration of hypothesis test](./illustration-tool/sim-hyp-tes-ill/sim_hyp_tes_ill.html)
-
+[Illustration of hypothesis test](`r params$illustration_link_01`)
 </div>
-
-
-
-<!--..........................................................................-->
-<!-- <hr /> -->
-
-<!-- # Illustrations (using *R-Shiny*) -->
-
-<!-- <span style="font-size: 20pt; text-decoration: underline">Approach</spam> -->
-
-<!-- <div style="margin-left: 20pt"> -->
-
-<!-- To run the application on your local computer, please follow the instructions below: -->
-
-<!-- 1) Sign into *ILIAS* using your university of Hohenheim account. -->
-<!-- 2) Open *R* or *RStudio*. -->
-<!-- 3) Copy the code chunk for the respective illustration (see below) -->
-<!-- 4) Insert the code chunk into your console and hit enter. -->
-<!-- 5) A browser window with the application should open. -->
-<!-- 6) To terminate the application by -->
-<!--     1) closing the browser window -->
-<!--     2) clicking into the console pane and hitting ESC. -->
-
-<!-- </div> -->
-
-<!-- <span style="font-size: 20pt; text-decoration: underline">Illustrations</spam> -->
-
-<!-- <div style="margin-left: 20pt"> -->
-
-<!-- <span style="font-size: 18pt; text-decoration: none">Illustration of Hypothesis Tests</spam> -->
-
-```{r,eval=FALSE,include=FALSE}
-
-source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1734940/ShinyApplications/RunApp_IllustrationHypothesisTest_ShinyApplication.R")
-
-```
-
-<!-- </div> -->
 
 <!--..........................................................................-->
 <hr />
@@ -415,7 +358,7 @@ This learning module was developed by:
 <hr />
 
 <p class="back01">
-[Back To *ILIAS*](https://ilias.uni-hohenheim.de/goto.php?target=crs_1513853&client_id=UHOH)
+[Back To *ILIAS*](`r params$ilias_course_link`)
 </p>
 
 <!--..........................................................................-->

@@ -9,6 +9,7 @@ params:
   dat_nam_01: "CASchools_01_data.txt"
   dat_link_02: "https://ilias.uni-hohenheim.de/goto.php?target=file_1532689_download&client_id=UHOH"
   dat_nam_02: "CPS_01_data.txt"
+  illustration_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1776644/illustration-statistical-concepts/sim-hyp-tes-ill/sim_hyp_tes_ill.html" # fixed!
 editor_options: 
   chunk_output_type: console
 ---
@@ -874,6 +875,16 @@ ill_hyp_tes_fun(t.act = -4.39, test = "two.sid")
 
 </div>
 <!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Illustration
+</p>
+
+<div style="margin-left: 20pt">
+[Illustration of hypothesis test](`r params$illustration_link_01`)
+</div>
 
 <hr />
 
@@ -2050,6 +2061,16 @@ ill_hyp_tes_fun(t.act = 3.67, test = "two.sid")
 
 </div>
 <!--..........................................................................-->
+
+<hr />
+
+<p class="head03">
+Illustration
+</p>
+
+<div style="margin-left: 20pt">
+[Illustration of hypothesis test](`r params$illustration_link_01`)
+</div>
 
 <hr />
 
