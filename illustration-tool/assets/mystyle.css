@@ -11,7 +11,7 @@
 
 /* include/exclude link to github start */
 .footer-github-cl {
-  display: block;
+  display: none;
 }
 
 /* include/exclude link to ilias start */
@@ -19,15 +19,20 @@
   display: none;
 }
 
-/* include/exclude access to github */
-.access-ilias-cl {
+/* include/exclude link back */
+.footer-plain-cl {
   display: block;
 }
 
+/* include/exclude access to github */
+/* .access-ilias-cl {
+  display: block;
+} */
+
 /* include/exclude access to ilias */
-.access-ilias-cl {
+/* .access-ilias-cl {
   display: none;
-}
+} */
 
 body {
   font-family: "Helvetica", sans-serif; 
