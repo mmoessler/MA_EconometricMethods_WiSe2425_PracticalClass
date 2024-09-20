@@ -160,7 +160,7 @@ Run the following code chunk to make sure that all necessary *libraries* are ins
 ```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
 
 # packages we will use in the course
-pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+pac <- c("moments", "sandwich", "lmtest", "AER", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
 
 # install and/or load packages
 checkpac <- function(x) {
@@ -1663,82 +1663,18 @@ xfun::file_string('./assets/bottom_01.html')
 
 <script>
 
-//// See: https://www.w3schools.com/jsref/met_element_remove.asp
-//// Remove all solutions from html
-//var i, Sol01;
-//Sol01 = document.getElementsByClassName("showSol01");
-//for (i = 0; i < Sol01.length; i++) {
-//  //Sol01[i].remove();
-//  Sol01[i].parentNode.removeChild(Sol01[i]);
-//}
-
-
-
-// swith from "bloc" to "none"
-
 // Hide all solutions (by default)
 var i, Sol01;
 Sol01 = document.getElementsByClassName("showSol01");
 for (i = 0; i < Sol01.length; i++) {
-  Sol01[i].style.display = "none";
+  Sol01[i].style.display = "none"; // type "block" for show or "none" (default) for exclude
 }
   
 var i, NoSol01;
 NoSol01 = document.getElementsByClassName("noSol01");
 for (i = 0; i < NoSol01.length; i++) {
-  NoSol01[i].style.display = "block";
+  NoSol01[i].style.display = "block"; // type "block" (default) for show or "none" for exclude
 }
-
-
-
-
-
-// Hide all solutions (on cklick)
-function hideAllSolutions01() {
-
-  var i, Sol01;
-  Sol01 = document.getElementsByClassName("showSol01");
-  for (i = 0; i < Sol01.length; i++) {
-    Sol01[i].style.display = "block";
-  }
-  
-  var i, NoSol01;
-  NoSol01 = document.getElementsByClassName("noSol01");
-  for (i = 0; i < NoSol01.length; i++) {
-    NoSol01[i].style.display = "none";
-  }
-  
-}
-
-// Show all solutions (on click)
-function showAllSolutions01() {
-
-  var i, Sol01;
-  Sol01 = document.getElementsByClassName("showSol01");
-  for (i = 0; i < Sol01.length; i++) {
-    Sol01[i].style.display = "block";
-  }
-  
-  var i, NoSol01;
-  NoSol01 = document.getElementsByClassName("noSol01");
-  for (i = 0; i < NoSol01.length; i++) {
-    NoSol01[i].style.display = "none";
-  }
-  
-}
-
-
-// Hide exclude
-var exc;
-exc = document.getElementById("Exc01");
-exc.style.display = "none";
-
-var exc;
-exc = document.getElementById("Exc02");
-exc.style.display = "none";
-
-
-  
 </script>
 
 ````

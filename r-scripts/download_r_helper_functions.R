@@ -1,6 +1,6 @@
 
 # packages we will use in the course
-pac <- c("httr", "stringr","moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+pac <- c("httr", "stringr","moments", "sandwich", "lmtest", "AER", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
 
 # install and/or load packages
 checkpac <- function(x) {

@@ -160,7 +160,7 @@ Run the following code chunk to make sure that all necessary *libraries* are ins
 ```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
 
 # packages we will use in the course
-pac <- c("moments", "sandwich", "lmtest", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+pac <- c("moments", "sandwich", "lmtest", "AER", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
 
 # install and/or load packages
 checkpac <- function(x) {

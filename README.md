@@ -32,3 +32,76 @@ for (i = 0; i < NoSol01.length; i++) {
   NoSol01[i].style.display = "block"; // type "block" (default) for show or "none" for exclude
 }
 ```
+
+## Handling required packages and helper functions
+
+### Required packages
+
+Note on required packages and helper functions, i.e., wrapped built-in functions.
+
+The required packages are downloaded and us used in every session.
+
+```R
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "AER", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+```
+
+### Helper functions
+
+The helper functions, i.e., wrapped built-in functions can be found in
+
+* `00_ExerciseSheet_HelperFunctions_XX`
+* `r-scripts/r_helper_functions.R`
+* `r-scripts/prepare_r_packages_and_helper_functions.R`
+
+#### Motivations
+
+The motivations for using the helper functions is rooted in the fact that the basic fitting routines like `lm()` does not return robust standard errors.
+
+Instead the `vcovHC` function of the `sandwich` package has to be used. To avoid this two-step-implementation I provided the follwoing wrapper/helper function
+
+```R
+lm_ct_fun <- function(formula, ..., hc.type = "HC1") {
+  
+  z <- stats::lm(formula, ...)
+  z$sum <- summary(z)
+  
+  if (hc.type == "const") {
+    z$ct <- lmtest::coeftest(z, vcov = sandwich::vcovHC(z, type="const")) # test based on ordinary SEs
+  } else if (hc.type == "HC1") {
+    z$ct <- lmtest::coeftest(z, vcov = sandwich::vcovHC(z, type="HC1")) # test based on heteroskedasticity robust SEs
+  }
+  
+  z
+  
+}
+```
+
+Thus, instead of using `lm()` to fit linear models I use `lm_ct_fun()`. Similar wrapper functions are provided for other estimation procedures. (see `00_ExerciseSheet_HelperFunctions_XX.Rmd`).
+
+#### Workflow
+
+The code chunk below will download and save `r_helper_functions.R` with the helper functions uploaded on ILIAS to the current directory.
+
+```R
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+```
+
+The code chunk below will include the helper functions in `r_helper_functions.R` to the current script.
+
+```R
+# Include R-helper functions
+source("r_helper_functions.R")
+```
