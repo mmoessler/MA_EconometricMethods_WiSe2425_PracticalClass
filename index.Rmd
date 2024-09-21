@@ -351,8 +351,10 @@ A comparison of the implementation of basic econometric methods in <span class="
 
 This learning module was developed by:
 
-* Domenic Franjic
-* Markus Mößler
+* Domenic Franjic (as reasearch assistant and PhD student)
+* Markus Mößler (as reasearch assistant and PhD student)
+* Damilola Aladesuru (as student assistant)
+* Marc Bachmeier (as student assistant)
 
 <!--..........................................................................-->
 <hr />

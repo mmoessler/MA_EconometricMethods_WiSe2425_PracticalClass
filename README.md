@@ -8,7 +8,6 @@ These adjustments include:
 
 * Adjust the link to the ILIAS courses in yaml header in `./index.Rmd`.
   * Link to illustration tool is fixed!
-  * Link to implementation tool (S&W in R, STATA and GRETL) is not fixed!
 * Adjust the link to datasets upload to ILIAS for each exercise sheet in the yaml header, e.g., in `01_ExerciseSheet_No01_XX.Rmd`.
 * Adjust the link to source helper functions from ILIAS in each exercise sheet, e.g., in `01_ExerciseSheet_No01_XX.Rmd` (see below)
 * Adjust the link also in `r-scripts/prepare_r_packages_and_helper_functions.R` and `download_r_helper_functions.R`.
@@ -109,6 +108,12 @@ The code chunk below will include the helper functions in `r_helper_functions.R`
 # Include R-helper functions
 source("r_helper_functions.R")
 ```
+
+## Software Implemetnation S&W in R, STATA and GRETL
+
+The directory `software-implementations` contains the implementations of the analysis of the most important models in R, STATA and GRETL.
+
+The module is linked in the `index.Rmd` file.
 
 ## Rest
 

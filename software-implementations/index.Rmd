@@ -32,7 +32,7 @@ This Learning Module contains the implementation of the empirical analysis of @S
 This is an overview of the most important function of *R* and STATA necessary to implement basic econometric methods.
 -->
 
-Use the links below to get to the implementation of the respective Chapter/Empirical model.
+Use the links below to get to the implementation of the respective Chapter/Empirical Model.
 
 <!--..........................................................................-->
 <hr />
