@@ -11,7 +11,6 @@ nocite: |
   @StockWatson2020Introduction
 params:
   ilias_course_link: "https://ilias.uni-hohenheim.de/goto.php?target=crs_1513853&client_id=UHOH" # change!
-  implementation_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1857407/SoftwareImplementation_StockWatson/index.html" # change!
   illustration_link_01: "https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1776644/illustration-statistical-concepts/sim-hyp-tes-ill/sim_hyp_tes_ill.html" # fixed!
 editor_options: 
   chunk_output_type: console
@@ -320,7 +319,8 @@ A comparison of the implementation of basic econometric methods in <span class="
 </div>
 
 <center>
-<span class="emp01">[Implementation in other statistic software packages](`r params$implementation_link_01`)</span></span>
+<span class="emp01">[Implementation in other statistic software packages](./software-implementations/index.html)</span></span>
+
 <span class="emp01">Note, additional support is only provided for <span class="R">R!</span></span>
 </center>
 

@@ -1,0 +1,95 @@
+---
+output: html_fragment
+bibliography: [Ma_EconometricMethods_Literature.bib]
+biblio-style: apalike
+link-citations: no
+nocite: | 
+  @StockWatson2019Introduction
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+# Approach
+
+This Learning Module contains the implementation of the empirical analysis of @StockWatson2020Introduction in <span class="emp01">R</span>, <span class="emp01">STATA</span> and <span class="emp01">gretl</span>.
+
+<!--
+This is an overview of the most important function of *R* and STATA necessary to implement basic econometric methods.
+-->
+
+Use the links below to get to the implementation of the respective Chapter/Empirical model.
+
+<!--..........................................................................-->
+<hr />
+
+# Chapter/Empirical model
+
+<!-- 0. Installation of *R* ([GoTo](./00_InstallationOfR/00_InstallationOfR_XX.html)) -->
+1. Regression Analysis with Cross-Sectional Data: [Estimation](./01_Section/01_Section_XX.html)
+2. Regression Analysis with Cross-Sectional Data: [Inference](./02_Section/02_Section_XX.html)
+3. Regression Analysis with Cross-Sectional Data: [Heteroskedasticity](./03_Section/03_Section_XX.html)
+4. Regression Analysis with Panel-Data: [Fixed and random effects](./06_Section/06_Section_XX.html) 
+5. Regression Analysis with Cross-Sectional Data: [Limited Dependent Variable](./05_Section/05_Section_XX.html)
+6. Regression Analysis with Cross-Sectional Data: [Instrumental Variable](./04_Section/04_Section_XX.html)
+
+<!-- 4. Regression Analysis with Cross-Sectional Data: [Instrumental Variable](./04_Section/04_Section_XX.html) -->
+<!-- 5. Regression Analysis with Cross-Sectional Data: [Limited Dependent Variable](./05_Section/05_Section_XX.html) -->
+<!-- 6. Regression Analysis with Panel-Data: [Fixed and random effects](./06_Section/06_Section_XX.html) -->
+
+<!--..........................................................................-->
+<hr />
+
+# Using Gretl IDE
+
+1. Introduction: [Link](./Gretl_IDE/01_Introduction/01_Introduction_XX.html)
+2. Data manipulation: [Link](./Gretl_IDE/02_DataManipulation/02_DataManipulation_XX.html)
+3. Regression analysis: [Link](./Gretl_IDE/03_Regression/03_Regression_XX.html)
+4. Output generation in GRETL: [Link](./Gretl_IDE/04_Output/04_Output_XX.html)
+5. Panel data analysis: [Link](./Gretl_IDE/05_PanelData/05_PanelData_XX.html)
+6. Time series: [Link](./Gretl_IDE/06_TimeSeries/06_TimeSeries_XX.html)
+<!--..........................................................................-->
+<hr />
+
+# Literature
+
+<div id="refs"></div>
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Practical Class*](../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````
