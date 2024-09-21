@@ -1,0 +1,1002 @@
+---
+output:
+  html_document:
+    css: !expr c("./assets/style.css")
+    includes:
+      in_header: !expr c("./assets/header_01.html")
+params:
+  dat_link_01: "https://ilias.uni-hohenheim.de/goto.php?target=file_1555582_download&client_id=UHOH"
+  dat_nam_01: "CASchools_03_data.txt"
+editor_options: 
+  chunk_output_type: console
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- Include header -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/header_02.html')
+```
+````
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+library(knitr)
+knitr::opts_chunk$set(
+  include=FALSE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center')
+# See: https://stackoverflow.com/questions/36230790/missing-horizontal-scroll-bar-in-r-markdown-html-code-chunks-and-output
+options(width=1000)
+
+```
+
+```{r}
+
+# # 1) clear workspace # exclude to be able to use params in yml header!
+# rm(list=ls(all=TRUE))
+
+# 2) load libraries
+library(kableExtra)
+library(texreg)
+
+# 3) load r-scripts
+source("./r-scripts/r_helper_functions.R")
+source("./r-scripts/texreg_extract_fun_02.R")
+
+# 4) load data
+cas.dat <- read.table(file = "./data-sets/CASchools_03_data.txt",
+                      header = TRUE,
+                      sep = ",",
+                      stringsAsFactors = TRUE)
+
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+
+# See: https://rlesur.github.io/klippy/articles/klippy.html
+klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Mock Exam Part I {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Linear Regression with Multiple Regressors
+</p>
+
+<hr />
+
+<!--..........................................................................-->
+## Set-Up
+
+<span style="text-decoration: none; font-size: 18pt">
+1)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Create your (working) directory
+</span>
+
+Create a new folder on your computer in which you can save all necessary files, i.e., the data set, the <span class="R">R</span> *script* with the implementation of your analysis and the <span class="R">R</span> *helper function script* with some helper functions provided by us.
+
+This folder, i.e., the path or directory of this folder, will be your so-called working directory.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+2)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Download the data set
+</span>
+
+<!-- Download the data sets `CASchools_01_data` from <span class="R">ILIAS</span> directly or by using the link below: -->
+
+<!-- <p class="down01"> -->
+<!-- <a href="https://ilias.uni-hohenheim.de/goto.php?target=file_1523858_download&client_id=UHOH">Download `CASchools_01_data.txt`</a> -->
+<!-- </p> -->
+
+Download the data set ``r params$dat_nam_01`` from <span class="R">ILIAS</span> directly or by using the link below:
+
+<p class="down01">
+<a href="`r params$dat_link_01`">Download ``r params$dat_nam_01``</a>
+</p>
+
+Save the data set into a (working) directory of your choice.
+
+<hr />
+
+<span style="text-decoration: none; font-size: 18pt">
+3)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Prepare *script*
+</span>
+
+Open a new <span class="R">R</span> *script* and save it into into your (working) directory.
+
+Run the following code chunk to prepare your <span class="R">R</span> *script*, i.e., to clear the work space and set your working directory.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Clear workspace
+rm(list = ls(all = TRUE))
+# Set working directory
+setwd(".../set/your/working/directory/...")
+
+```
+
+<hr />
+
+<div style="display:none">
+
+<span style="text-decoration: none; font-size: 18pt">
+X)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install *libraries*
+</span>
+
+Run the following code chunk to make sure that all necessary *libraries* are installed.
+
+*Note*, You have to run this code chunk only once. After running this code chunk you have installed all necessary *libraries* for the class and we will load them whenever we need them.
+
+```{r,include=TRUE,echo=TRUE,eval=TRUE,include=FALSE}
+
+# packages we will use in the course
+pac <- c("moments", "sandwich", "lmtest", "AER", "car", "plm", "ivreg", "dynlm", "forecast", "urca")
+
+# install and/or load packages
+checkpac <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+  }
+  require(x, character.only = TRUE)
+}
+
+# check if packages are install yet
+suppressWarnings(sapply(pac, checkpac))
+
+```
+
+<hr />
+
+</div>
+
+<span style="text-decoration: none; font-size: 18pt">
+4)
+</span>
+<span style="text-decoration: underline; font-size: 18pt">
+Install/load *packages* and download/save/include *helper function script*
+</span>
+
+<span style="text-decoration: underline">Step 1</span>) Install all relevant <span class="R">R</span> *packages* and download and save the <span class="R">R</span> *script* `r_helper_functions.R` from <span class="R">ILIAS</span> by running the following code chunk.
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Download R-helper functions
+source("https://ilias.uni-hohenheim.de/data/UHOH/lm_data/lm_1856939/MA_EconometricMethods_WiSe2324_PracticalClass/r-scripts/prepare_r_packages_and_helper_functions.R")
+
+```
+
+*Note*, the required <span class="R">R</span> *packages* are `"moments"`, `"sandwich"`, `"lmtest"`, `"lmtest"`, `"car"`, `"plm"`, `"ivreg"`, `"dynlm"`, `"forecast"`, `"urca"`.
+
+<div style="margin-top: 5px;">
+<span style="text-decoration: underline">Step 2</span>) Include the <span class="R">R</span> *script* `r_helper_functions.R` into your <span class="R">R</span> *script* by running the following code chunk.
+</div>
+
+```{r,include=TRUE,echo=TRUE,eval=FALSE}
+
+# Include R-helper functions
+source("r_helper_functions.R")
+
+```
+
+*Note*, more information on the helper functions can be found [here](./00_ExerciseSheet_HelperFunctions_XX.html).
+
+
+
+
+
+<!-- <hr /> -->
+
+## Task {.tabset .tabset-fade}
+
+<hr />
+
+<p class="head01">
+Class Size and Student Performance: Interaction Effects
+</p>
+
+We return to our analysis of class size and student performance and analyze the interaction between class size and percentage of English learners. For this we use the complete California test score data set `CASchool_03_data.txt` again and construct the dummy variables $HiSTR$ and $HiEL$ as we did in the lecture.
+
+<hr />
+
+<p class="head02">
+Variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Show Variable Description* </button>
+<div class="content01">
+
+| Variable   | Description                                 | 
+|------------|---------------------------------------------| 
+| $students$ | Total enrollment.                           | 
+| $teachers$ | Number of teachers.                         | 
+| $read$     | Average reading score.                      | 
+| $math$     | Average math score.                         |
+| $PctEL$    | Percent of English learners.                |
+| $Expen$    | Expenditure per student.                    |
+| $avginc$   | Average district income per capita.         |
+| $lunch$    | Percent qualifying for reduced-price lunch. |
+
+</div>
+<!--..........................................................................-->
+
+```{r, include=FALSE}
+
+# cas.dat <- read.table(file = "CASchools_03_data.txt",
+#                       header = TRUE,
+#                       sep = ",")
+head(cas.dat)
+
+# Compute STR
+cas.dat$STR <- cas.dat$students/cas.dat$teachers
+# Compute TestScore
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2
+
+# Interaction
+cas.dat$HiSTR <- round(cas.dat$STR,2)>=20
+str(cas.dat$HiSTR)
+
+cas.dat$HiEL <- round(cas.dat$PctEL,2)>=10
+str(cas.dat$HiEL)
+
+# Model 1
+lm.res.01 <- lm(score ~ HiSTR + HiEL + I(HiSTR*HiEL), data = cas.dat)
+# Model 2
+lm.res.02 <- lm(score ~ STR + HiEL + I(STR*HiEL), data = cas.dat)
+lm.res.02
+# lm.res.02 <- lm(score ~ STR + HiEL + STR*HiEL, data = cas.dat)
+# lm.res.02
+# Model 3
+lm.res.03 <- lm(score ~ STR + PctEL + I(STR*PctEL), data = cas.dat)
+
+library(sandwich)
+library(lmtest)
+# Model 1
+ct.01 <- coeftest(lm.res.01, vcov=vcovHC(lm.res.01, type="HC1"))
+se.01 <- ct.01[, 2]
+pval.01 <- ct.01[, 4]
+# Model 2
+ct.02 <- coeftest(lm.res.02, vcov=vcovHC(lm.res.02, type="HC1"))
+se.02 <- ct.02[, 2]
+pval.02 <- ct.02[, 4]
+# Model 3
+ct.03 <- coeftest(lm.res.03, vcov=vcovHC(lm.res.03, type="HC1"))
+se.03 <- ct.03[, 2]
+pval.03 <- ct.03[, 4]
+
+library(car)
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.res.02, c("HiELTRUE=0",
+                                            "I(STR * HiEL)=0"), white.adjust = "hc1")
+
+
+
+# Model 4 (column 4 of S&W)
+lm.res.04 <- lm(score ~ STR + HiEL + I(STR*HiEL) + lunch + log(avginc), data = cas.dat)
+lm.res.04
+
+library(car)
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.res.04, c("HiELTRUE=0",
+                                            "I(STR * HiEL)=0"), white.adjust = "hc1")
+
+# Model 5 (column 5 of S&W)
+lm.res.05 <- lm(score ~ STR + I(STR^2) + I(STR^3) + HiEL + lunch + log(avginc), data = cas.dat)
+lm.res.05
+# Model 6 (column 6 of S&W)
+lm.res.06 <- lm(score ~ STR + I(STR^2) + I(STR^3) + HiEL + I(HiEL*STR) + I(HiEL*STR^2) + I(HiEL*STR^3) + lunch + log(avginc), data = cas.dat)
+lm.res.06
+# Model 7 (column 7 of S&W)
+lm.res.07 <- lm(score ~ STR + I(STR^2) + I(STR^3) + PctEL + lunch + log(avginc), data = cas.dat)
+lm.res.07
+
+library(sandwich)
+library(lmtest)
+# Model 4
+ct.04 <- coeftest(lm.res.04, vcov=vcovHC(lm.res.04, type="HC1"))
+se.04 <- ct.04[, 2]
+pval.04 <- ct.04[, 4]
+
+(ct.04[5,1]-(-0.45))/ct.04[5,2] # use this
+(ct.04[6,1]-(10))/ct.04[6,2]
+# two sided 1.96
+# one sided 1.64
+
+# Model 5
+ct.05 <- coeftest(lm.res.05, vcov=vcovHC(lm.res.05, type="HC1"))
+se.05 <- ct.05[, 2]
+pval.05 <- ct.05[, 4]
+# Model 6
+ct.06 <- coeftest(lm.res.06, vcov=vcovHC(lm.res.06, type="HC1"))
+se.06 <- ct.06[, 2]
+pval.06 <- ct.06[, 4]
+# Model 7
+ct.07 <- coeftest(lm.res.07, vcov=vcovHC(lm.res.07, type="HC1"))
+se.07 <- ct.07[, 2]
+pval.07 <- ct.07[, 4]
+
+library(car)
+# heteroskedasticity-robust F-test
+lin.hyp.02 <- linearHypothesis(lm.res.05, c("I(STR^2)=0",
+                                            "I(STR^3)=0"), white.adjust = "hc1")
+library(car)
+# heteroskedasticity-robust F-test
+# lin.hyp.03 <- linearHypothesis(lm.res.06, c("I(HiEL * STR)=0",
+#                                             "I(HiEL * STR^2)=0",
+#                                             "I(HiEL * STR^3)=0"), white.adjust = "hc1")
+# WHAT IS GOING WRONG HERE?!
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Estimation Results* </button>
+<div class="content01">
+
+```{r,include=TRUE}
+
+screenreg(list(lm.res.04),
+       override.se = list(se.04),
+       override.pvalues = list(pval.04),
+       caption = "Estimation Results",
+       caption.above = TRUE,
+       label = "Tab02",
+       stars = numeric(0),
+       custom.model.names = c("Model 1"),
+       custom.coef.names = c("Intercept","STR","HiEL","HiEL x STR","lunch","log(avginc)"),
+       float.pos = "h",
+       single.row = TRUE,
+       booktabs = TRUE,
+       dcolumn = TRUE,
+       use.packages = FALSE,
+       ci.force = FALSE,
+       digits = 3,
+       include.rsquared = TRUE,
+       include.adjrs = TRUE,
+       include.rmse = TRUE,
+       include.nobs = FALSE)
+
+```
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<hr />
+
+<!--..........................................................................-->
+### Task a) 
+
+Use the estimation results depicted under Model 1 in Table 2 of the Mock Exam Task. Specify the estimated regression line. Interpret the specification and the estimation results.
+
+*Interpret the estimation results for the effect of  $STR$ across classes with low and high percentage of English learners.*
+
+<hr />
+
+<p class="head02">
+Load data set
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,eval=FALSE}
+# use absolute or relative path to load data
+cas.dat <- read.table(file = "CASchools_03_data.txt",
+                      header = TRUE,
+                      sep = ",")
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Construct variables
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE}
+# compute STR and append it to cas.dat
+cas.dat$STR <- cas.dat$students/cas.dat$teachers 
+# compute TestScore and append it to cas.dat
+cas.dat$score <- (cas.dat$read + cas.dat$math)/2
+# HiSTR
+cas.dat$HiSTR <- round(cas.dat$STR,2)>=20
+# HiEL
+cas.dat$HiEL <- round(cas.dat$PctEL,2)>=10
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Regression estimation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# model estimation
+lm.ct.res.01 <- lm_ct_fun(score ~ STR + HiEL + I(STR*HiEL) + lunch + log(avginc), data = cas.dat, hc.type="HC1")
+lm.ct.res.01$ct
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# model estimation
+lm.ct.res.01 <- lm_ct_fun(score ~ STR + HiEL + I(STR*HiEL) + lunch + log(avginc), data = cas.dat, hc.type="HC1")
+lm.ct.res.01$ct
+```
+</div>
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+
+# model 1
+se.01 <- lm.ct.res.01$ct[, 2]
+pval.01 <- lm.ct.res.01$ct[, 4]
+
+```
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Estimation Results* </button>
+<div class="content01">
+
+```{r,include=TRUE}
+screenreg(list(lm.ct.res.01),
+          override.se = list(se.01),
+          override.pvalues = list(pval.01),
+          caption = "Estimation Results",
+          caption.above = TRUE,
+          label = "Tab01",
+          # stars = numeric(0),
+          # custom.model.names = c("Model 1"),
+          # custom.coef.names = c("Intercept","HiSTR","HiEL","HiSTR x HiEL"),
+          custom.model.names = c("Model 1"),
+          custom.coef.names = c("Intercept","STR","HiEL","HiEL x STR","lunch","log(avginc)$"),
+          stars = NULL,
+          float.pos = "h",
+          single.row = TRUE,
+          booktabs = TRUE,
+          dcolumn = TRUE,
+          use.packages = FALSE,
+          ci.force = FALSE,
+          digits = 3,
+          include.rsquared = TRUE,
+          include.adjrs = TRUE,
+          include.rmse = TRUE,
+          include.nobs = TRUE)
+```
+
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Regression line
+</p>
+
+<!-- \begin{align} -->
+<!-- score_i = \beta_0 + \beta_1 STR_i + \beta_2 HiEL_i + \beta_3 \left(HiEL_i \times STR_i \right) + \beta_4 \times lunch_i + \beta_5 \times log\left(avging_i\right) -->
+<!-- \end{align} -->
+
+\begin{align}
+\small
+score_i = `r round(lm.ct.res.01$ct[1, 1],2)` + `r round(lm.ct.res.01$ct[2, 1],2)` STR_i + `r round(lm.ct.res.01$ct[3, 1],2)` HiEL_i + `r round(lm.ct.res.01$ct[4, 1],2)` \left(HiEL_i \times STR_i \right) + `r round(lm.ct.res.01$ct[5, 1],2)` \times lunch_i + `r round(lm.ct.res.01$ct[6, 1],2)` \times log\left(avging_i\right)
+\end{align}
+
+<p class="head03">
+Effects
+</p>
+
+Effect of $STR$ for $HiEL=0$:
+
+\begin{align}
+\frac{\Delta score}{\Delta STR} &= `r round(lm.ct.res.01$ct[2, 1],2)`
+\end{align}
+
+<!-- \frac{\Delta score}{\Delta STR} &= \beta_1 \\ -->
+
+<!-- * Effect is not significant at 10% with a $t$-value of `r round(lm.ct.res.01$ct[2, 3],2)`. -->
+
+<!-- <u>Effect of $STR$ for $HiEL=1$</u>: -->
+
+<!-- \begin{align} -->
+<!-- \frac{\Delta score}{\Delta STR} &= \left( \beta_1 + \beta_3 \right)  STR_i \\ -->
+<!-- \frac{\Delta score}{\Delta STR} &= `r round(lm.ct.res.01$ct[2, 1] + lm.ct.res.01$ct[4, 1],2)` -->
+<!-- \end{align} -->
+
+<!-- * Effect is ... -->
+
+Difference in the effect of $STR$ for $HiEL=1$ and $HiEL=0$:
+
+\begin{align}
+\frac{\Delta score}{\Delta STR} &= `r round(lm.ct.res.01$ct[4, 1],2)`
+\end{align}
+
+<!-- \frac{\Delta score}{\Delta STR} &= \beta_3 \\ -->
+
+<!-- * Difference of the Effect is not significant at 10% with a $t$-value of `r round(lm.ct.res.01$ct[4, 3],2)`. -->
+
+<hr>
+
+<p class="head03">
+Inference
+</p>
+
+* Effect of $STR$ for $HiEL=0$: Not significant at 10% with a $t$-value of $`r round(lm.ct.res.01$ct[2, 3],2)`$.
+* Difference in the effect of $STR$ for $HiEL=0$ and $HiEL=1$: Not significant at 10% with a $t$-value of $`r round(lm.ct.res.01$ct[4, 3],2)`$.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task b) 
+
+<u>Old</u>:
+
+Test whether the coefficient of the variable $lunch$ is lower than $-0.45$. State the null and alternative hypothesis, calculate the test and state your decision.
+
+<u>New</u>:
+
+Test whether the coefficient of the variable $lunch$ is equal $-0.45$. State the null and alternative hypothesis, calculate the test and state your decision.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Statement of the hypothesis
+</p>
+
+<!-- \begin{align} -->
+<!-- H_0&: \quad \beta_{lunch} \leq -0.45 \quad \text{vs.} \\ -->
+<!-- H_1&: \quad \beta_{lunch} > -0.45 \quad \alpha = 5\% -->
+<!-- \end{align} -->
+
+\begin{align}
+H_0&: \quad \beta_{lunch} = -0.45 \quad \text{vs.} \\
+H_1&: \quad \beta_{lunch} \neq -0.45 \quad \alpha = 5\%
+\end{align}
+
+<p class="head03">
+Calculation of the test statistic
+</p>
+
+```{r, include=FALSE}
+
+tes.sta.val <- (lm.ct.res.01$ct[5,1] - (-0.45))/lm.ct.res.01$ct[5,2]
+tes.sta.val
+
+pval <- 1-pnorm(tes.sta.val)
+pval
+
+```
+
+\begin{align}
+t^{act} &= \frac{\hat{\beta}_{lunch}^{act} - 0.45}{SE\left(\hat{\beta}_{lunch}\right)} \\
+t^{act} &= \frac{`r round(lm.ct.res.01$ct[5,1],3)` - \left(- 0.45 \right)}{`r round(lm.ct.res.01$ct[5,2],3)`} \\
+t^{act} &= `r round(tes.sta.val,3)`
+\end{align}
+
+<p class="head03">
+Decision
+</p>
+
+<!-- * $1.28 < t^{act} < 1.64$ -->
+<!-- * $\Rightarrow$ Rejection of $H_0$ at 10% but not at a 5% significance level. -->
+
+* $t^{act} < 1.64$
+* $\Rightarrow$ No rejection of $H_0$ at 10% significance level.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task c) 
+
+For the test in Task b) calculate the p-value and interpret the results.
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+```{r, include=FALSE}
+
+tes.sta.val <- (lm.ct.res.01$ct[5,1] - (-0.45))/lm.ct.res.01$ct[5,2]
+tes.sta.val
+
+pval <- 1-pnorm(tes.sta.val)
+pval
+
+pval <- 2*pnorm(-abs(tes.sta.val))
+pval
+
+```
+
+<p class="head03">
+Calculation of the $p$-value.
+</p>
+
+<!-- \begin{align} -->
+<!-- p\text{-value} &= 1 - \Phi\left(z \leq t^{act}\right) \\ -->
+<!-- p\text{-value} &= `r round(pval,3)` -->
+<!-- \end{align} -->
+
+\begin{align}
+p-\text{value} &= 2*\Phi\left(-|t^{act}|\right) \\
+&= 2*\Phi\left(`r -abs(round(tes.sta.val,3))`\right) \\
+&= `r round(pval,3)`
+\end{align}
+
+<p class="head03">
+Decision
+</p>
+
+<!-- * $0.05 < p\text{-value} < 0.10$ -->
+<!-- * $\Rightarrow$ Rejection of $H_0$ at 10% but not at a 5% significance level. -->
+
+* $p\text{-value} > 0.10$
+* $\Rightarrow$ No rejection of $H_0$ at 10% significance level.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task d) 
+
+Test (1) whether the relationship between class size and student performance depends on the share of English learners and (2) whether the share of English learners has an effect on student performance at all. State the respective null and alternative hypothesis, state the receptive test values and your decision. Use the estimation and test results depicted in Table 2 and Table 3 on the Mock Exam Task above and Table 3 on the Mock Exam Task.
+
+<hr />
+
+<p class="head02">
+Test
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Code* </button>
+<div class="content01">
+```{r,include=TRUE,echo=TRUE,results=FALSE,fig.show='hide'}
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.ct.res.01, c("HiELTRUE=0",
+                                               "I(STR * HiEL)=0"), white.adjust = "hc1")
+lin.hyp.01
+```
+</div>
+<!--..........................................................................-->
+<button type="button" class="collapsible01"> *Show Output* </button>
+<div class="content01">
+```{r,include=TRUE,echo=FALSE,results=TRUE}
+# heteroskedasticity-robust F-test
+lin.hyp.01 <- linearHypothesis(lm.ct.res.01, c("HiELTRUE=0",
+                                               "I(STR * HiEL)=0"), white.adjust = "hc1")
+lin.hyp.01
+```
+</div>
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation I* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Question
+</p>
+
+Test whether the relationship between class size and student performance depends on the share of English learners.
+
+<p class="head03">
+Statement of the hypothesis
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{\left(HiEL_i \times STR_i \right)} = 0 \quad \text{vs.} \\
+H_1&: \quad \beta_{\left(HiEL_i \times STR_i \right)} \neq 0 \quad \alpha = 5\%
+\end{align}
+
+<p class="head03">
+Calculation of the test statistic
+</p>
+
+```{r, include=FALSE}
+
+tes.sta.val <- (lm.ct.res.01$ct[4,1] - (0))/lm.ct.res.01$ct[4,2]
+tes.sta.val
+
+pval <- 1-pnorm(tes.sta.val)
+pval
+
+```
+
+\begin{align}
+t^{act} &= \frac{\hat{\beta}_{\left(HiEL_i \times STR_i \right)}^{act} - 0}{SE\left(\hat{\beta}_{\left(HiEL_i \times STR_i \right)}\right)} \\
+t^{act} &= \frac{`r round(lm.ct.res.01$ct[4,1],3)` - \left(- 0 \right)}{`r round(lm.ct.res.01$ct[4,2],3)`} \\
+t^{act} &= `r round(tes.sta.val,3)`
+\end{align}
+
+<p class="head03">
+Decision
+</p>
+
+* $-1.64 < t^{act}$
+* $\Rightarrow$ Rejection of $H_0$ at 10% significance level.
+
+<p class="head03">
+Conclusion
+</p>
+
+The relationship between class size and studetn performance does not depend on the share of English learners
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation II* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Question
+</p>
+
+Test whether the share of English learners has an effect on student performance at all.
+
+<p class="head03">
+Statement of the hypothesis
+</p>
+
+\begin{align}
+H_0&: \quad \beta_{HiEL_i} = \beta_{\left(HiEL_i \times STR_i \right)} = 0 \quad \text{vs.} \\
+H_1&: \quad \text{at least one} \neq 0 \quad \quad \alpha = 5\%
+\end{align}
+
+<p class="head03">
+State the test statistic
+</p>
+
+\begin{align}
+F^{act}\left( `r lin.hyp.01$Df[2]`, `r lin.hyp.01$Res.Df[2]` \right) &= `r round(lin.hyp.01$F[2],3)`
+\end{align}
+
+<p class="head03">
+Compare with critical value
+</p>
+
+\begin{align}
+F^{crit, 0.01}_{2, \infty} = 4.61
+\end{align}
+
+* $F^{crit, 0.01}_{2, \infty} < F^{act}$
+* $\Rightarrow$ Rejection of $H_0$ at 1% significance level.
+
+<p class="head03">
+Conclusion
+</p>
+
+The share of English learners has an effect on student performance at all.
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+<!--..........................................................................-->
+### Task e) 
+
+Predict the effect of reducing $STR$ by $2$ based on the estimation results depicted under Model 1 in Table 2 on the Mock Exam Task.
+
+<hr />
+
+<p class="head02">
+Interpretation
+</p>
+
+<!--..........................................................................-->
+<button type="button" class="collapsible02"> *Interpretation* </button>
+<div class="content01">
+
+<div style="color: red" class="showSol01">
+
+<p class="head03">
+Effect for high percentage of English Learners
+</p>
+
+\begin{align}
+\widehat{\Delta score} = 2 * \left( `r round(lm.ct.res.01$ct[2,1], 2)` + `r round(lm.ct.res.01$ct[4,1], 2)` \right) = `r round(2 * (lm.ct.res.01$ct[2,1] + lm.ct.res.01$ct[4,1]), 2)`
+\end{align}
+
+<p class="head03">
+Effect for low percentage of English Learners
+</p>
+
+\begin{align}
+\widehat{\Delta score} = 2 * \left( `r round(lm.ct.res.01$ct[2,1], 2)` \right) = `r round(2 * lm.ct.res.01$ct[2,1], 2)`
+\end{align}
+
+</div>
+
+<div style="color: red" class="noSol01">
+
+*Add your Interpretation here!*
+
+</div>
+
+</div>
+<!--..........................................................................-->
+
+
+
+
+
+
+
+
+
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start*](./index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('./assets/bottom_01.html')
+```
+````
+
+````{=html}
+
+<script>
+
+// Hide all solutions (by default)
+var i, Sol01;
+Sol01 = document.getElementsByClassName("showSol01");
+for (i = 0; i < Sol01.length; i++) {
+  Sol01[i].style.display = "none"; // type "block" for show or "none" (default) for exclude
+}
+  
+var i, NoSol01;
+NoSol01 = document.getElementsByClassName("noSol01");
+for (i = 0; i < NoSol01.length; i++) {
+  NoSol01[i].style.display = "block"; // type "block" (default) for show or "none" for exclude
+}
+
+</script>
+
+````

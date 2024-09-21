@@ -303,7 +303,7 @@ This link contains a very short [introduction to <span class="R">R</span>](./00_
 
 # Facultative Assignment
 
-Please find a solution of the facultative assignment [here](./XX_Assignment_XX.html).
+Please find a solution of the facultative assignment [here](./XX_Assignment_WiSe2324_XX.html).
 
 Note, this is a very extensive solution and is only partly representative for the evaluation of the solutions handed in.
 
