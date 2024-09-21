@@ -1,0 +1,159 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,include=FALSE}
+library("devtools")
+# devtools::install_github("ijlyttle/vembedr")
+library("vembedr")
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Using GRETL IDE
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Introduction {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### Log file {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+How to Generate Log Files in GRETL 
+</p>
+
+Generating a log file is crucial for saving scripts or lines of code which are used to complete an econometric estimation. This allows for easy review and revision of work done.
+<br>
+</br>
+More specifically, log files will be required along other exercise submissions in this module thus, it is important to learn how to generate them when using the GRETL GUI.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/LwPzK_yQBTw") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+
+<!--..........................................................................-->
+### Session Icon View {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Session Icon View
+</p>
+
+The session icon view tab in GRETL allows user to save graphs, tables and econometrics models for outputs to be printed, saved as pdf, word or processed LaTex.
+<br>
+</br>
+Learn some of the things that can be done with the tab and then, independently explore more possibilities.
+
+<br>
+</br>
+
+<p class="head02">
+Saving results using session icon view 'Graph page'
+</p>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/5jZhMlnWmFY") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<br>
+</br>
+
+<p class="head02">
+Saving outputs using session icon view 'Model table'
+</p>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/5jZhMlnWmFY") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

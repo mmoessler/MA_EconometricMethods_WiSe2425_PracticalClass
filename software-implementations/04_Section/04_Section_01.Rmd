@@ -1,0 +1,238 @@
+---
+title: "Introductory Econometrics"
+subtitle: "*R* and *STATA* Code"
+author: by Markus Mößler and Marc Bachmeier
+output:
+  html_document:
+    highlight: tango
+    css: style.css
+    includes:
+      in_header: logo.html
+bibliography: [Teaching_References.bib]
+biblio-style: apalike
+link-citations: yes
+nocite: | 
+  @StockWatson2020Introduction
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Cross-Sectional Data | Instrumental Variable {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 12.4 
+</p>
+
+Panel data on cigarette consumption for the 48 continental US States from 1985–1995 contains 48 observations on 7 variables fpr 2 periods. We calculate a linear regression with the change in cigarette consumption as the dependent variable. Additionally we use the difference in the sales taxes between 1985 and 1995 and the difference in the cigarette-specific sales taxes between 1985 and 1995 as instruments for the price difference between 1985 and 1995.
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| packs         | Number of packs per capita |
+| price         | Average price during fiscal year, including sales tax     |
+| income        | State personal income (total, nominal)    |
+| cpi           | Consumer price index  |
+| population    | State population |
+| taxs          | Average excise taxes for fiscal year, including sales tax    |
+| tax           | Average state, federal and average local excise taxes for fiscal year     |
+
+
+<hr />
+
+<!--..........................................................................-->
+## *R* Sofware {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CigarettesSW")
+
+c1985 <- subset(CigarettesSW, year== "1985")
+c1995 <- subset(CigarettesSW, year== "1995")
+
+# generate new variables for regression
+packsdiff <- log(c1995$packs) - log(c1985$packs)
+pricediff <- log(c1995$price/c1995$cpi) - log(c1985$price/c1985$cpi)
+incomediff <- log(c1995$income/c1995$population/c1995$cpi) - log(c1985$income/c1985$population/c1985$cpi)
+salestaxdiff <- (c1995$taxs - c1995$tax)/c1995$cpi - (c1985$taxs - c1985$tax)/c1985$cpi
+cigtaxdiff <- c1995$tax/c1995$cpi - c1985$tax/c1985$cpi
+
+# calculate and store regression results with instrumental variable
+cig_ivreg <- ivreg(packsdiff ~ pricediff + incomediff | incomediff + salestaxdiff + cigtaxdiff, data = CigarettesSW)
+
+# summarize regression results
+summary(cig_ivreg)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CigarettesSW")
+
+c1985 <- subset(CigarettesSW, year== "1985")
+c1995 <- subset(CigarettesSW, year== "1995")
+
+# generate new variables for regression
+packsdiff <- log(c1995$packs) - log(c1985$packs)
+pricediff <- log(c1995$price/c1995$cpi) - log(c1985$price/c1985$cpi)
+incomediff <- log(c1995$income/c1995$population/c1995$cpi) - log(c1985$income/c1985$population/c1985$cpi)
+salestaxdiff <- (c1995$taxs - c1995$tax)/c1995$cpi - (c1985$taxs - c1985$tax)/c1985$cpi
+cigtaxdiff <- c1995$tax/c1995$cpi - c1985$tax/c1985$cpi
+
+# calculate and store regression results with instrumental variable
+cig_ivreg <- ivreg(packsdiff ~ pricediff + incomediff | incomediff + salestaxdiff + cigtaxdiff, data = CigarettesSW)
+
+# summarize regression results
+summary(cig_ivreg)
+```
+
+<!--..........................................................................-->
+## STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/cig_ch10.dta
+
+# reshape data
+reshape wide cpi pop packpc income tax avgprs taxs, i(state) j(year)
+
+# generate new variables for regression
+gen packsdiff= log(packpc1995) - log(packpc1985)
+gen pricediff= log(avgprs1995/cpi1995) - log(avgprs1985/cpi1985)
+gen incomediff= log(income1995/pop1995/cpi1995) - log(income1985/pop1985/cpi1985)
+gen salestaxdiff= (taxs1995 - tax1995) / cpi1995 - (taxs1985 - tax1985) / cpi1985
+gen cigtaxdiff= tax1995 / cpi1995 - tax1985 / cpi1985
+
+# calculate and show regression results with instrumental variable
+ivreg packsdiff (pricediff = salestaxdiff cigtaxdiff) incomediff
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+      Source |       SS           df       MS      Number of obs   =        48
+-------------+----------------------------------   F(2, 45)        =     27.71
+       Model |  .451735013         2  .225867506   Prob > F        =    0.0000
+    Residual |  .374721452        45  .008327143   R-squared       =    0.5466
+-------------+----------------------------------   Adj R-squared   =    0.5264
+       Total |  .826456465        47   .01758418   Root MSE        =    .09125
+
+------------------------------------------------------------------------------
+   packsdiff |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   pricediff |  -1.202403   .1711928    -7.02   0.000    -1.547203   -.8576033
+  incomediff |   .4620301   .3081013     1.50   0.141    -.1585177    1.082578
+       _cons |  -.0520034   .0604947    -0.86   0.395    -.1738459    .0698391
+------------------------------------------------------------------------------
+Instrumented:  pricediff
+Instruments:   incomediff salestaxdiff cigtaxdiff
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+## References
+
+<hr />
+
+<p class="head01">
+References
+</p>
+
+<!--##########################################################################-->
+<!-- THIS IS THE END --> 
+<script>
+var coll = document.getElementsByClassName("collapsible01");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+
+<script>
+var coll = document.getElementsByClassName("collapsible02");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>

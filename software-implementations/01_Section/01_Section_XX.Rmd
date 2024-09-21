@@ -1,0 +1,258 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Cross-Sectional Data
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Estimation {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 6.2 
+</p>
+
+The dataset contains data on test performance, school characteristics and student demographic backgrounds for school districts in California with 420 observations on 14 variables. We calculate a linear regression with the average math and reading score as the dependent variable. 
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| read          | Average reading score |
+| math          | Average math score      |
+| english       | Percent of English learners      |
+| students      | Total enrollment      |
+| teachers      | Number of teachers   |
+
+
+<hr />
+
+<!--..........................................................................-->
+### *R* Software {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.6.1 <- lm(score ~ str + english, data = CASchools)
+
+# summarize regression results
+summary(lm.6.1)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.6.1 <- lm(score ~ str + english, data = CASchools)
+
+# summarize regression results
+summary(lm.6.1)
+```
+
+<!--..........................................................................-->
+### STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/caschool.dta
+ 
+# rename variables
+rename el_pct english
+rename testscr score
+
+# calculate and show regression results
+reg score str english
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+      Source |       SS           df       MS      Number of obs   =       420
+-------------+----------------------------------   F(2, 417)       =    155.01
+       Model |  64864.3011         2  32432.1506   Prob > F        =    0.0000
+    Residual |  87245.2925       417  209.221325   R-squared       =    0.4264
+-------------+----------------------------------   Adj R-squared   =    0.4237
+       Total |  152109.594       419  363.030056   Root MSE        =    14.464
+
+------------------------------------------------------------------------------
+       score |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         str |  -1.101296   .3802783    -2.90   0.004    -1.848797   -.3537945
+     english |  -.6497768   .0393425   -16.52   0.000    -.7271112   -.5724423
+       _cons |   686.0322   7.411312    92.57   0.000     671.4641    700.6004
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+### Gretl {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Data
+</p>
+
+You can download and install the data sets from the Stock and Watson textbook from the following link: 
+http://gretl.sourceforge.net/gretl_data.html \
+The data sets are automatically saved in the Gretl folder under data. Alternatively, another storage location can be selected. Afterwards the data sets can easily be opened via the script with the command open. Alternatively, under the tab file, Open data can be selected and from the folder in which the data sets were stored the desired data set can be selected.
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open caschool.gdt
+
+# rename variables
+rename el_pct english
+rename testscr score
+
+# calculate and show regression results
+ols score 0 str english
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: OLS, using observations 1-420
+Dependent variable: score
+
+             coefficient   std. error   t-ratio    p-value 
+  ---------------------------------------------------------
+  const      686.032       7.41131       92.57    3.87e-280 ***
+  str         −1.10130     0.380278      −2.896   0.0040    ***
+  english     −0.649777    0.0393425    −16.52    1.66e-047 ***
+
+Mean dependent var   654.1565   S.D. dependent var   19.05335
+Sum squared resid    87245.29   S.E. of regression   14.46448
+R-squared            0.426431   Adjusted R-squared   0.423680
+F(2, 417)            155.0136   P-value(F)           4.62e-51
+Log-likelihood      −1716.561   Akaike criterion     3439.123
+Schwarz criterion    3451.243   Hannan-Quinn         3443.913
+
+</pre>
+
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

@@ -1,0 +1,153 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,include=FALSE}
+library("devtools")
+# devtools::install_github("ijlyttle/vembedr")
+library("vembedr")
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Using GRETL IDE
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Introduction {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### GRETL UI {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+GRETL User Interface
+</p>
+
+This section provides an overview of the GRETL user interface by describing the basic function of the different icons, tools and options available for use upon loading the GRETL application.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/uckghBijdxI") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+### Loading Data {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Loading Data in GRETL 
+</p>
+
+How to access available dataset from different econometrics textbooks on the GRETL server and how to use dataset available in the computer's user library.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/LwPzK_yQBTw") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+### Data Structure {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Setting Data Structure 
+</p>
+
+When using data from a local file, GRETL always requires that the structure of the dataset be specified i.e. to indicate whether the dataset is cross-sectional, time-series or a panel data. For data downloaded from the GRETL server, this and additonal information about the dataset is already loaded into GRETL.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/YaHSg-DsqGw") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

@@ -1,0 +1,1375 @@
+---
+title: "Introductory Econometrics"
+subtitle: "*R* and *STATA* Code"
+author: by Markus Mößler and Marc Bachmeier
+output:
+  html_document:
+    highlight: tango
+    css: style.css
+    includes:
+      in_header: logo.html
+bibliography: [Teaching_References.bib]
+biblio-style: apalike
+link-citations: yes
+nocite: | 
+  @StockWatson2020Introduction
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Panel-Data | Fixed and random effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 10.3 
+</p>
+
+US traffic fatalities panel data for the “lower 48” US states (i.e., excluding Alaska and Hawaii), annually for 1982 through 1988 containing 336 observations on 34 variables. We calculate a linear regression with the fatality rate as the dependent variable and use different panel data methods such as pooled OLS, fixed effects and random effects. 
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| fatal         | numeric. Number of vehicle fatalities |
+| pop           | numeric. Population     |
+| beertax       | numeric. Tax on case of beer     |
+| year          | factor indicating year  |
+
+<hr />
+
+<!--..........................................................................-->
+## *R* Sofware {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+### Pooled OLS {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# calculate and store regression results with pooled OLS
+lm.1 <- lm(fatal_rate ~ beertax, data =  Fatalities)
+
+# summarize regression results
+summary(lm.1)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# calculate and store regression results with pooled OLS
+lm.1 <- lm(fatal_rate ~ beertax, data =  Fatalities)
+
+# summarize regression results
+summary(lm.1)
+```
+
+
+<!--..........................................................................-->
+### Fixed Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+#### Approach 1 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Estimation 
+</p>
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# summarize regression results
+summary(plm.fe)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# summarize regression results
+summary(plm.fe)
+
+```
+
+<hr />
+
+<p class="head01">
+Robust inference 
+</p>
+
+<hr />
+
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+#install.packages("lmtest")
+#install.packages("sandwich")
+
+# load required packages 
+library ("plm")
+library ("lmtest")
+library ("sandwich")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# calculate Heteroskedasticity-Robust Variance.Covariance matrix
+HC.10.3 <- vcovHC(plm.fe, type = "HC1")
+
+# Robust inference
+coeftest(plm.fe, vcov=HC.10.3)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+#install.packages("lmtest")
+#install.packages("sandwich")
+
+# load required packages 
+library ("plm")
+library ("lmtest")
+library ("sandwich")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# calculate Heteroskedasticity-Robust Variance.Covariance matrix
+HC.10.3 <- vcovHC(plm.fe, type = "HC1")
+
+# Robust inference
+coeftest(plm.fe, vcov=HC.10.3)
+```
+
+
+<!--..........................................................................-->
+#### Approach 2 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# calculate and store regression results for OLS regression with dummies for every individual
+lm.2 <- lm(fatal_rate ~ beertax + factor(state), data = Fatalities)
+
+# summarize regression results
+summary(lm.2)
+```
+
+
+<hr />
+
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# calculate and store regression results for OLS regression with dummies for every individual
+lm.2 <- lm(fatal_rate ~ beertax + factor(state), data = Fatalities)
+
+# summarize regression results
+summary(lm.2)
+```
+
+<hr />
+
+
+<!--..........................................................................-->
+#### Approach 3 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# Extract individual fixed effects
+fixef(plm.fe,type="dmean")
+```
+
+
+<hr />
+
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with fixed effects
+plm.fe <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "within")
+
+# Extract individual fixed effects
+fixef(plm.fe,type="dmean")
+```
+
+
+<!--..........................................................................-->
+### Random Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with random effects
+plm.re <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "random")
+
+# summarize regression results
+summary(plm.re)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("Fatalities")
+
+# generate new variables for regression
+Fatalities$fatal_rate <- Fatalities$fatal / Fatalities$pop * 10000
+
+# install required packages if necessary
+#install.packages("plm")
+
+# load required packages 
+library ("plm")
+
+# calculate and store regression results with random effects
+plm.re <- plm(fatal_rate ~ beertax, data = Fatalities, index = c("state", "year"), model = "random")
+
+# summarize regression results
+summary(plm.re)
+```
+
+<!--..........................................................................-->
+## STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+### Pooled OLS {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+
+# calculate and show regression results with pooled OLS
+reg fatal_rate beertax
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+      Source |       SS           df       MS      Number of obs   =       336
+-------------+----------------------------------   F(1, 334)       =     34.39
+       Model |  10.1686591         1  10.1686591   Prob > F        =    0.0000
+    Residual |  98.7468534       334  .295649262   R-squared       =    0.0934
+-------------+----------------------------------   Adj R-squared   =    0.0906
+       Total |  108.915513       335  .325120933   Root MSE        =    .54374
+
+------------------------------------------------------------------------------
+  fatal_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     beertax |   .3646054   .0621698     5.86   0.000     .2423117    .4868992
+       _cons |   1.853308   .0435671    42.54   0.000     1.767607    1.939008
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+### Fixed Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+#### Approach 1 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Estimation 
+</p>
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+
+# Calculate and show regression results with fixed effects
+xtreg fatal_rate beertax, fe 
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Fixed-effects (within) regression               Number of obs     =        336
+Group variable: state                           Number of groups  =         48
+
+R-sq:                                           Obs per group:
+     within  = 0.0407                                         min =          7
+     between = 0.1101                                         avg =        7.0
+     overall = 0.0934                                         max =          7
+
+                                                F(1,287)          =      12.19
+corr(u_i, Xb)  = -0.6885                        Prob > F          =     0.0006
+
+------------------------------------------------------------------------------
+  fatal_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     beertax |  -.6558737     .18785    -3.49   0.001    -1.025612   -.2861353
+       _cons |   2.377075   .0969699    24.51   0.000     2.186213    2.567937
+-------------+----------------------------------------------------------------
+     sigma_u |  .71471463
+     sigma_e |  .18985942
+         rho |  .93408484   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+F test that all u_i=0: F(47, 287) = 52.18                    Prob > F = 0.0000
+
+</pre>
+
+<hr />
+
+<p class="head01">
+Robust inference 
+</p>
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+
+# Calculate and show regression results with fixed effects and robust standard errors
+xtreg fatal_rate beertax, fe vce(cluster state)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Fixed-effects (within) regression               Number of obs     =        336
+Group variable: state                           Number of groups  =         48
+
+R-sq:                                           Obs per group:
+     within  = 0.0407                                         min =          7
+     between = 0.1101                                         avg =        7.0
+     overall = 0.0934                                         max =          7
+
+                                                F(1,47)           =       5.05
+corr(u_i, Xb)  = -0.6885                        Prob > F          =     0.0294
+
+                                 (Std. Err. adjusted for 48 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+  fatal_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     beertax |  -.6558737   .2918557    -2.25   0.029    -1.243012   -.0687359
+       _cons |   2.377075   .1497967    15.87   0.000     2.075723    2.678427
+-------------+----------------------------------------------------------------
+     sigma_u |  .71471463
+     sigma_e |  .18985942
+         rho |  .93408484   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+#### Approach 2 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+
+# calculate and show regression results for OLS regression with dummies for every state
+reg fatal_rate beertax i.state
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+      Source |       SS           df       MS      Number of obs   =       336
+-------------+----------------------------------   F(48, 287)      =     56.97
+       Model |  98.5701385        48  2.05354455   Prob > F        =    0.0000
+    Residual |   10.345374       287  .036046599   R-squared       =    0.9050
+-------------+----------------------------------   Adj R-squared   =    0.8891
+       Total |  108.915513       335  .325120933   Root MSE        =    .18986
+
+------------------------------------------------------------------------------
+  fatal_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     beertax |  -.6558737     .18785    -3.49   0.001    -1.025612   -.2861353
+             |
+       state |
+         AZ  |  -.5677269   .2666662    -2.13   0.034    -1.092596   -.0428574
+         AR  |  -.6549516   .2190203    -2.99   0.003    -1.086041   -.2238617
+         CA  |  -1.509469   .3043508    -4.96   0.000    -2.108512    -.910426
+         CO  |   -1.48428   .2873532    -5.17   0.000    -2.049867   -.9186934
+         CT  |  -1.862257   .2805333    -6.64   0.000    -2.414421   -1.310094
+         DE  |  -1.307602   .2939478    -4.45   0.000    -1.886169   -.7290351
+         FL  |  -.2681302   .1393267    -1.92   0.055     -.542362    .0061016
+         GA  |    .524603   .1839474     2.85   0.005     .1625458    .8866601
+         ID  |  -.6690224   .2579674    -2.59   0.010     -1.17677   -.1612745
+         IL  |  -1.961623    .291496    -6.73   0.000    -2.535364   -1.387881
+         IN  |  -1.461542   .2725398    -5.36   0.000    -1.997972   -.9251112
+         IA  |  -1.543932   .2534422    -6.09   0.000    -2.042773   -1.045091
+         KS  |  -1.223216   .2454374    -4.98   0.000    -1.706302   -.7401303
+         KY  |  -1.217517   .2871651    -4.24   0.000    -1.782734   -.6523002
+         LA  |  -.8471162   .1886685    -4.49   0.000    -1.218466   -.4757668
+         ME  |  -1.107947   .1911213    -5.80   0.000    -1.484125   -.7317701
+         MD  |   -1.70644   .2832189    -6.03   0.000    -2.263889    -1.14899
+         MA  |  -2.109746   .2760991    -7.64   0.000    -2.653182    -1.56631
+         MI  |  -1.484527    .236019    -6.29   0.000    -1.949074   -1.019979
+         MN  |  -1.897213   .2650851    -7.16   0.000    -2.418971   -1.375456
+         MS  |  -.0290798   .1484539    -0.20   0.845    -.3212763    .2631167
+         MO  |  -1.296262    .266689    -4.86   0.000    -1.821176   -.7713473
+         MT  |  -.3603915   .2639632    -1.37   0.173    -.8799409    .1591579
+         NE  |  -1.522178   .2492797    -6.11   0.000    -2.012826    -1.03153
+         NV  |  -.6007749   .2859531    -2.10   0.037    -1.163606   -.0379436
+         NH  |  -1.254454   .2096847    -5.98   0.000    -1.667169   -.8417395
+         NJ  |   -2.10575    .307196    -6.85   0.000    -2.710392   -1.501107
+         NM  |    .426375   .2543206     1.68   0.095    -.0741952    .9269452
+         NY  |   -2.18667   .2989041    -7.32   0.000    -2.774992   -1.598348
+         NC  |   -.290465    .119841    -2.42   0.016    -.5263437   -.0545863
+         ND  |  -1.623439   .2538142    -6.40   0.000    -2.123013   -1.123866
+         OH  |  -1.674419   .2538142    -6.60   0.000    -2.173993   -1.174846
+         OK  |   -.545061   .1691229    -3.22   0.001    -.8779396   -.2121823
+         OR  |     -1.168   .2857154    -4.09   0.000    -1.730363   -.6056365
+         PA  |  -1.767466   .2760991    -6.40   0.000    -2.310902    -1.22403
+         RI  |  -2.265054   .2937591    -7.71   0.000     -2.84325   -1.686859
+         SC  |   .5571737   .1099958     5.07   0.000      .340673    .7736744
+         SD  |  -1.003721   .2096176    -4.79   0.000    -1.416304   -.5911381
+         TN  |  -.8756586   .2680169    -3.27   0.001    -1.403187   -.3481306
+         TX  |  -.9174734   .2455582    -3.74   0.000    -1.400797     -.43415
+         UT  |   -1.16395   .1964178    -5.93   0.000    -1.550552   -.7773484
+         VT  |  -.9660438    .211129    -4.58   0.000    -1.381601   -.5504862
+         VA  |  -1.290183   .2041564    -6.32   0.000    -1.692017   -.8883496
+         WA  |  -1.659524   .2834645    -5.85   0.000    -2.217457   -1.101591
+         WV  |  -.8967541    .246611    -3.64   0.000     -1.38215   -.4113585
+         WI  |  -1.759266   .2939478    -5.98   0.000    -2.337833   -1.180699
+         WY  |  -.2285037   .3128959    -0.73   0.466    -.8443655    .3873581
+             |
+       _cons |    3.47763   .3133568    11.10   0.000     2.860861    4.094399
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+#### Approach 3 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+
+# Calculate regression results with fixed effects
+quietly xtreg fatal_rate beertax, fe
+
+# Extract individual fixed effects
+predict individual_effect, u
+
+# Tabulate inidivdual fixed effects
+tabstat individual_effect, by(state)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+Summary for variables: individual_effect
+     by categories of: nr 
+
+ state |      mean
+-------+----------
+    AL |  1.100555
+    AZ |  .5328283
+    AR |  .4456036
+    CA | -.4089136
+    CO | -.3837252
+    CT | -.7617021
+    DE | -.2070468
+    FL |   .832425
+    GA |  1.625158
+    ID |  .4315327
+    IL | -.8610674
+    IN | -.3609864
+    IA |  -.443377
+    KS | -.1226608
+    KY | -.1169618
+    LA |   .253439
+    ME | -.0073922
+    MD | -.6058845
+    MA | -1.009191
+    MI | -.3839717
+    MN | -.7966579
+    MS |  1.071475
+    MO | -.1957065
+    MT |  .7401637
+    NE | -.4216227
+    NV |  .4997803
+    NH | -.1538992
+    NJ | -1.005194
+    NM |   1.52693
+    NY | -1.086115
+    NC |  .8100902
+    ND | -.5228841
+    OH | -.5738641
+    OK |  .5554942
+    OR | -.0674447
+    PA | -.6669111
+    RI | -1.164499
+    SC |  1.657729
+    SD |  .0968344
+    TN |  .2248966
+    TX |  .1830818
+    UT | -.0633952
+    VT |  .1345114
+    VA |  -.189628
+    WA | -.5589685
+    WV |  .2038011
+    WI | -.6587111
+    WY |  .8720515
+-------+----------
+ Total |  2.18e-09
+------------------
+
+</pre>
+
+<!--..........................................................................-->
+### Random Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/fatality.dta
+ 
+# Panel identifier
+iis state
+
+# Time identifier
+tis year
+
+# generate new variables for regression
+gen fatal_rate= allmort/pop*10000 
+ 
+# Calculate and show regression results with random effects
+xtreg fatal_rate beertax, re
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Random-effects GLS regression                   Number of obs     =        336
+Group variable: state                           Number of groups  =         48
+
+R-sq:                                           Obs per group:
+     within  = 0.0407                                         min =          7
+     between = 0.1101                                         avg =        7.0
+     overall = 0.0934                                         max =          7
+
+                                                Wald chi2(1)      =       0.18
+corr(u_i, X)   = 0 (assumed)                    Prob > chi2       =     0.6753
+
+------------------------------------------------------------------------------
+  fatal_rate |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     beertax |  -.0520158   .1241758    -0.42   0.675    -.2953959    .1913643
+       _cons |   2.067141   .0999715    20.68   0.000     1.871201    2.263082
+-------------+----------------------------------------------------------------
+     sigma_u |   .5157915
+     sigma_e |  .18985942
+         rho |  .88067496   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+## Gretl {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Data
+</p>
+
+You can download and install the data sets from the Stock and Watson textbook from the following link: 
+http://gretl.sourceforge.net/gretl_data.html \
+The data sets are automatically saved in the Gretl folder under data. Alternatively, another storage location can be selected. Afterwards the data sets can easily be opened via the script with the command open. Alternatively, under the tab file, Open data can be selected and from the folder in which the data sets were stored the desired data set can be selected.
+
+<!--..........................................................................-->
+### Pooled OLS {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open fatality.gdt
+ 
+# set panel and time idetifier
+setobs state year --panel-vars
+
+# generate new variables for regression
+genr fatal_rate = allmort/pop*10000
+
+# calculate and show regression results with pooled OLS
+ols fatal_rate 0 beertax
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Pooled OLS, using 336 observations
+Included 48 cross-sectional units
+Time-series length = 7
+Dependent variable: fatal_rate
+
+             coefficient   std. error   t-ratio    p-value 
+  ---------------------------------------------------------
+  const       1.85331      0.0435671    42.54     6.95e-137 ***
+  beertax     0.364605     0.0621698     5.865    1.08e-08  ***
+
+Mean dependent var   2.040444   S.D. dependent var   0.570194
+Sum squared resid    98.74685   S.E. of regression   0.543736
+R-squared            0.093363   Adjusted R-squared   0.090648
+F(1, 334)            34.39433   P-value(F)           1.08e-08
+Log-likelihood      −271.0387   Akaike criterion     546.0773
+Schwarz criterion    553.7116   Hannan-Quinn         549.1206
+rho                  0.871438   Durbin-Watson        0.110459
+
+</pre>
+
+
+<!--..........................................................................-->
+### Fixed Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+#### Approach 1 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Estimation 
+</p>
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open fatality.gdt
+ 
+# set panel and time idetifier
+setobs state year --panel-vars
+
+# generate new variables for regression
+genr fatal_rate = allmort/pop*10000
+
+# Calculate and show regression results with fixed effects
+panel fatal_rate 0 beertax
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Fixed-effects, using 336 observations
+Included 48 cross-sectional units
+Time-series length = 7
+Dependent variable: fatal_rate
+
+             coefficient   std. error   t-ratio    p-value 
+  ---------------------------------------------------------
+  const        2.37707     0.0969699    24.51     2.35e-072 ***
+  beertax     −0.655874    0.187850     −3.491    0.0006    ***
+
+Mean dependent var   2.040444   S.D. dependent var   0.570194
+Sum squared resid    10.34537   S.E. of regression   0.189859
+LSDV R-squared       0.905015   Within R-squared     0.040745
+LSDV F(48, 287)      56.96916   P-value(F)           2.0e-120
+Log-likelihood       107.9727   Akaike criterion    −117.9454
+Schwarz criterion    69.09306   Hannan-Quinn        −43.38662
+rho                  0.251243   Durbin-Watson        1.071815
+
+Joint test on named regressors -
+  Test statistic: F(1, 287) = 12.1904
+  with p-value = P(F(1, 287) > 12.1904) = 0.00055597
+
+Test for differing group intercepts -
+  Null hypothesis: The groups have a common intercept
+  Test statistic: F(47, 287) = 52.1792
+  with p-value = P(F(47, 287) > 52.1792) = 7.74336e-115
+
+</pre>
+
+<hr />
+
+<p class="head01">
+Robust inference 
+</p>
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open fatality.gdt
+ 
+# set panel and time idetifier
+setobs state year --panel-vars
+
+# generate new variables for regression
+genr fatal_rate = allmort/pop*10000
+
+# Calculate and show regression results with fixed effects and robust standard errors
+panel fatal_rate 0 beertax --robust
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Fixed-effects, using 336 observations
+Included 48 cross-sectional units
+Time-series length = 7
+Dependent variable: fatal_rate
+Robust (HAC) standard errors
+
+             coefficient   std. error   t-ratio    p-value 
+  ---------------------------------------------------------
+  const        2.37707      0.149797    15.87     1.67e-020 ***
+  beertax     −0.655874     0.291856    −2.247    0.0294    **
+
+Mean dependent var   2.040444   S.D. dependent var   0.570194
+Sum squared resid    10.34537   S.E. of regression   0.189859
+LSDV R-squared       0.905015   Within R-squared     0.040745
+Log-likelihood       107.9727   Akaike criterion    −117.9454
+Schwarz criterion    69.09306   Hannan-Quinn        −43.38662
+rho                  0.251243   Durbin-Watson        1.071815
+
+Joint test on named regressors -
+  Test statistic: F(1, 47) = 5.05015
+  with p-value = P(F(1, 47) > 5.05015) = 0.0293579
+
+Robust test for differing group intercepts -
+  Null hypothesis: The groups have a common intercept
+  Test statistic: Welch F(47, 100.0) = 66.6827
+  with p-value = P(F(47, 100.0) > 66.6827) = 5.01075e-058
+
+</pre>
+
+
+<!--..........................................................................-->
+#### Approach 2 {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open fatality.gdt
+ 
+# set panel and time idetifier
+setobs state year --panel-vars
+
+# generate new variables for regression
+genr fatal_rate = allmort/pop*10000
+
+# Create dummy for every state
+? dummify state --drop-first
+
+# calculate and show regression results for OLS regression with dummies for every state
+ols fatal_rate 0 beertax Dstate_4 Dstate_5 Dstate_6 Dstate_8 Dstate_9 \
+  Dstate_10 Dstate_12 Dstate_13 Dstate_16 Dstate_17 Dstate_18 Dstate_19 \
+  Dstate_20 Dstate_21 Dstate_22 Dstate_23 Dstate_24 Dstate_25 Dstate_26 \
+  Dstate_27 Dstate_28 Dstate_29 Dstate_30 Dstate_31 Dstate_32 Dstate_33 \
+  Dstate_34 Dstate_35 Dstate_36 Dstate_37 Dstate_38 Dstate_39 Dstate_40 \
+  Dstate_41 Dstate_42 Dstate_44 Dstate_45 Dstate_46 Dstate_47 Dstate_48 \
+  Dstate_49 Dstate_50 Dstate_51 Dstate_53 Dstate_54 Dstate_55 Dstate_56
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Pooled OLS, using 336 observations
+Included 48 cross-sectional units
+Time-series length = 7
+Dependent variable: fatal_rate
+
+              coefficient   std. error   t-ratio    p-value 
+  ----------------------------------------------------------
+  const        3.47763       0.313357    11.10     4.75e-024 ***
+  beertax     −0.655874      0.187850    −3.491    0.0006    ***
+  Dstate_4    −0.567727      0.266666    −2.129    0.0341    **
+  Dstate_5    −0.654952      0.219020    −2.990    0.0030    ***
+  Dstate_6    −1.50947       0.304351    −4.960    1.21e-06  ***
+  Dstate_8    −1.48428       0.287353    −5.165    4.50e-07  ***
+  Dstate_9    −1.86226       0.280533    −6.638    1.58e-010 ***
+  Dstate_10   −1.30760       0.293948    −4.448    1.24e-05  ***
+  Dstate_12   −0.268130      0.139327    −1.924    0.0553    *
+  Dstate_13    0.524603      0.183947     2.852    0.0047    ***
+  Dstate_16   −0.669022      0.257967    −2.593    0.0100    ***
+  Dstate_17   −1.96162       0.291496    −6.730    9.23e-011 ***
+  Dstate_18   −1.46154       0.272540    −5.363    1.69e-07  ***
+  Dstate_19   −1.54393       0.253442    −6.092    3.58e-09  ***
+  Dstate_20   −1.22322       0.245437    −4.984    1.08e-06  ***
+  Dstate_21   −1.21752       0.287165    −4.240    3.02e-05  ***
+  Dstate_22   −0.847116      0.188668    −4.490    1.03e-05  ***
+  Dstate_23   −1.10795       0.191121    −5.797    1.78e-08  ***
+  Dstate_24   −1.70644       0.283219    −6.025    5.17e-09  ***
+  Dstate_25   −2.10975       0.276099    −7.641    3.24e-013 ***
+  Dstate_26   −1.48453       0.236019    −6.290    1.18e-09  ***
+  Dstate_27   −1.89721       0.265085    −7.157    6.92e-012 ***
+  Dstate_28   −0.0290798     0.148454    −0.1959   0.8448   
+  Dstate_29   −1.29626       0.266689    −4.861    1.93e-06  ***
+  Dstate_30   −0.360392      0.263963    −1.365    0.1732   
+  Dstate_31   −1.52218       0.249280    −6.106    3.30e-09  ***
+  Dstate_32   −0.600775      0.285953    −2.101    0.0365    **
+  Dstate_33   −1.25445       0.209685    −5.983    6.53e-09  ***
+  Dstate_34   −2.10575       0.307196    −6.855    4.37e-011 ***
+  Dstate_35    0.426375      0.254321     1.677    0.0947    *
+  Dstate_36   −2.18667       0.298904    −7.316    2.57e-012 ***
+  Dstate_37   −0.290465      0.119841    −2.424    0.0160    **
+  Dstate_38   −1.62344       0.253814    −6.396    6.45e-010 ***
+  Dstate_39   −1.67442       0.253814    −6.597    2.02e-010 ***
+  Dstate_40   −0.545061      0.169123    −3.223    0.0014    ***
+  Dstate_41   −1.16800       0.285715    −4.088    5.65e-05  ***
+  Dstate_42   −1.76747       0.276099    −6.402    6.26e-010 ***
+  Dstate_44   −2.26505       0.293759    −7.711    2.07e-013 ***
+  Dstate_45    0.557174      0.109996     5.065    7.30e-07  ***
+  Dstate_46   −1.00372       0.209618    −4.788    2.70e-06  ***
+  Dstate_47   −0.875659      0.268017    −3.267    0.0012    ***
+  Dstate_48   −0.917473      0.245558    −3.736    0.0002    ***
+  Dstate_49   −1.16395       0.196418    −5.926    8.88e-09  ***
+  Dstate_50   −0.966044      0.211129    −4.576    7.08e-06  ***
+  Dstate_51   −1.29018       0.204156    −6.320    9.99e-010 ***
+  Dstate_53   −1.65952       0.283465    −5.854    1.31e-08  ***
+  Dstate_54   −0.896754      0.246611    −3.636    0.0003    ***
+  Dstate_55   −1.75927       0.293948    −5.985    6.44e-09  ***
+  Dstate_56   −0.228504      0.312896    −0.7303   0.4658   
+
+Mean dependent var   2.040444   S.D. dependent var   0.570194
+Sum squared resid    10.34537   S.E. of regression   0.189859
+R-squared            0.905015   Adjusted R-squared   0.889129
+F(48, 287)           56.96916   P-value(F)           2.0e-120
+Log-likelihood       107.9727   Akaike criterion    −117.9454
+Schwarz criterion    69.09306   Hannan-Quinn        −43.38662
+rho                  0.251243   Durbin-Watson        1.071815
+
+Excluding the constant, p-value was highest for variable 65 (Dstate_28)
+
+</pre>
+
+
+<!--..........................................................................-->
+### Random Effects {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open fatality.gdt
+ 
+# set panel and time idetifier
+setobs state year --panel-vars
+
+# generate new variables for regression
+genr fatal_rate = allmort/pop*10000
+ 
+# Calculate and show regression results with random effects
+panel fatal_rate 0 beertax --random-effects
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Random-effects (GLS), using 336 observations
+Included 48 cross-sectional units
+Time-series length = 7
+Dependent variable: fatal_rate
+
+             coefficient   std. error      z       p-value 
+  ---------------------------------------------------------
+  const       2.06714      0.0999715    20.68     5.54e-095 ***
+  beertax    −0.0520158    0.124176     −0.4189   0.6753   
+
+Mean dependent var   2.040444   S.D. dependent var   0.570194
+Sum squared resid    112.0239   S.E. of regression   0.578273
+Log-likelihood      −292.2323   Akaike criterion     588.4645
+Schwarz criterion    596.0988   Hannan-Quinn         591.5078
+rho                  0.251243   Durbin-Watson        1.071815
+
+'Between' variance = 0.266041
+'Within' variance = 0.0360466
+theta used for quasi-demeaning = 0.862201
+corr(y,yhat)^2 = 0.0933628
+
+Joint test on named regressors -
+  Asymptotic test statistic: Chi-square(1) = 0.175467
+  with p-value = 0.675298
+
+Breusch-Pagan test -
+  Null hypothesis: Variance of the unit-specific error = 0
+  Asymptotic test statistic: Chi-square(1) = 754.567
+  with p-value = 4.07797e-166
+
+Hausman test -
+  Null hypothesis: GLS estimates are consistent
+  Asymptotic test statistic: Chi-square(1) = 17.8587
+  with p-value = 2.37926e-005
+
+</pre>
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+## References
+
+<hr />
+
+<p class="head01">
+References
+</p>
+
+<!--##########################################################################-->
+<!-- THIS IS THE END --> 
+<script>
+var coll = document.getElementsByClassName("collapsible01");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+
+<script>
+var coll = document.getElementsByClassName("collapsible02");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>

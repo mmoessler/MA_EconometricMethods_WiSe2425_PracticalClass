@@ -1,0 +1,284 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Cross-Sectional Data
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Heteroskedasticity {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 16.4
+</p>
+
+The dataset contains data on test performance, school characteristics and student demographic backgrounds for school districts in California with 420 observations on 14 variables. We calculate a linear regression with the average math and reading score as the dependent variable. We want to test if the student teacher ratio and the expenditure are jointly significant in this equation.
+
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| read          | Average reading score |
+| math          | Average math score      |
+| english       | Percent of English learners      |
+| students      | Total enrollment      |
+| teachers      | Number of teachers   |
+| expenditure   | Expenditure per student   |
+
+
+<hr />
+
+<!--..........................................................................-->
+### *R* Sofware {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.16.4 <- lm(score ~ str + english, data = CASchools)
+
+# install required packages if necessary
+#install.packages("lmtest")
+#install.packages("sandwich")
+
+# load required packages 
+library ("lmtest")
+library ("sandwich")
+
+# calculate Heteroskedasticity-Robust Variance-Covariance matrix
+HC.16.4 <- vcovHC(lm.16.4, type = "HC1")
+
+# Robust inference
+coeftest(lm.16.4, vcov=HC.16.4)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.16.4 <- lm(score ~ str + english, data = CASchools)
+
+# install required packages if necessary
+#install.packages("lmtest")
+#install.packages("sandwich")
+
+# load required packages 
+library ("lmtest")
+library ("sandwich")
+
+# calculate Heteroskedasticity-Robust Variance-Covariance matrix
+HC.16.4 <- vcovHC(lm.16.4, type = "HC1")
+
+# Robust inference
+coeftest(lm.16.4, vcov=HC.16.4)
+```
+
+<!--..........................................................................-->
+### STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/caschool.dta
+ 
+# rename variables
+rename el_pct english
+rename expn_stu expenditure
+rename testscr score
+ 
+# calculate and show regression results with Heteroskedasticity-Robust Standard Errors
+reg score str english, robust
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Linear regression                               Number of obs     =        420
+                                                F(2, 417)         =     223.82
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4264
+                                                Root MSE          =     14.464
+
+------------------------------------------------------------------------------
+             |               Robust
+       score |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         str |  -1.101296   .4328472    -2.54   0.011     -1.95213   -.2504616
+     english |  -.6497768   .0310318   -20.94   0.000     -.710775   -.5887786
+       _cons |   686.0322   8.728224    78.60   0.000     668.8754     703.189
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+### Gretl {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Data
+</p>
+
+You can download and install the data sets from the Stock and Watson textbook from the following link: 
+http://gretl.sourceforge.net/gretl_data.html \
+The data sets are automatically saved in the Gretl folder under data. Alternatively, another storage location can be selected. Afterwards the data sets can easily be opened via the script with the command open. Alternatively, under the tab file, Open data can be selected and from the folder in which the data sets were stored the desired data set can be selected.
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open caschool.gdt
+
+# rename variables
+rename el_pct english
+rename testscr score
+
+# calculate and show regression results with Hteroskedasticity-Robust Standard Errors
+ols score 0 str english --robust
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: OLS, using observations 1-420
+Dependent variable: score
+Heteroskedasticity-robust standard errors, variant HC1
+
+             coefficient   std. error   t-ratio    p-value 
+  ---------------------------------------------------------
+  const      686.032       8.72822       78.60    3.98e-252 ***
+  str         −1.10130     0.432847      −2.544   0.0113    **
+  english     −0.649777    0.0310318    −20.94    4.70e-067 ***
+
+Mean dependent var   654.1565   S.D. dependent var   19.05335
+Sum squared resid    87245.29   S.E. of regression   14.46448
+R-squared            0.426431   Adjusted R-squared   0.423680
+F(2, 417)            223.8229   P-value(F)           9.28e-67
+Log-likelihood      −1716.561   Akaike criterion     3439.123
+Schwarz criterion    3451.243   Hannan-Quinn         3443.913
+
+</pre>
+
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

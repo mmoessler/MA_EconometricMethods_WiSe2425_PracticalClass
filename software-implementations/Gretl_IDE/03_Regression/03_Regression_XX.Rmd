@@ -1,0 +1,211 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,include=FALSE}
+library("devtools")
+# devtools::install_github("ijlyttle/vembedr")
+library("vembedr")
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Using GRETL IDE
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Regression Analysis {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### OLS {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Ordinary Least Square with Single and Multiple Regressor(s)
+</p>
+
+OLS regression models are the basic forms of regression in econometrics. In this video, learn how to perform OLS regression analysis using single regressor or multiple regressors and fulfilling heteroskedasticity terms in GRETL Graphical User Interface (GUI) which also presents the t and p-values allowing users to test associated hypothesis.
+<br>
+</br>
+The video shows how to use the GUI for the [Estimation](./01_Section/01_Section_XX.html), [Inference](./02_Section/02_Section_XX.html) and [Heteroskedasticity](./03_Section/03_Section_XX.html) chapters of this econometrics learning module.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/Z_QpPp3kAUw") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 4 & 7: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+
+<!--..........................................................................-->
+### Quad_Poly_Log {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Non-linear Estimation 1 - Quadratic, Polynomials, Logarithmic Regression
+</p>
+
+How to estimate regression model with squares, cube and log of variables.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/GNWKX9cWofY") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+<!--..........................................................................-->
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 7 & 8: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+<!--..........................................................................-->
+### Binary {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Non-linear Estimation 2 - Regression Model with Binary or Dummy Variables
+</p>
+
+How to generate dummy variables from continuous variables and how to specify tp GRETL that variable values 0 and 1 are to be identified as categorical variables. That is, variables that say 0 = male and 1 = female or 0 = white and 1 = black.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/OBTSG77KxQ0") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+<!--..........................................................................-->
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 8: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+<!--..........................................................................-->
+### Instumental Variable {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Regression Model with Instrumental Variables
+</p>
+
+See dataset description in [Regression Analysis with Cross-Sectional Data: Instrumental Variable](./04_Section/04_Section_XX.html)
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/OBTSG77KxQ0") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+<!--..........................................................................-->
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 12: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

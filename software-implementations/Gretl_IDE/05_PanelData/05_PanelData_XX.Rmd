@@ -1,0 +1,111 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,include=FALSE}
+library("devtools")
+# devtools::install_github("ijlyttle/vembedr")
+library("vembedr")
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Using GRETL IDE
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Panel Data Analysis {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+The video shows how to use the Gretl GUI for the [Panel-Data](./06_Section/06_Section_XX.html) chapter of this econometrics learning module.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/p3XfQxQc9W4") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 10: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<!-- <hr /> -->
+
+<!-- <p class="head01"> -->
+<!-- References -->
+<!-- </p> -->
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

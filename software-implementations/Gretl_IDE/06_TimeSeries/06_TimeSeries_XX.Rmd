@@ -1,0 +1,135 @@
+---
+output: html_fragment
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,include=FALSE}
+library("devtools")
+# devtools::install_github("ijlyttle/vembedr")
+library("vembedr")
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Using GRETL IDE
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+## Time Series {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+### Part A {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+First half - Data, ACF and PACF
+</p>
+
+This first half of the time series video talks about how to load your time series data, generate new variables, graph and correlogram (ACF and PACF) plots, and testing for stationarity.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/8x-q3SEiho4") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+### Part B {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Second half- Modelling
+</p>
+
+After learning about all that is contained in the first part of this video, this half talks about time series models in GRETL.
+<br>
+</br>
+
+```{r, include=TRUE,echo=FALSE}
+embed_url("https://youtu.be/zEnRN1NOmr8") %>%
+    use_align("center")  %>%
+    use_bs_responsive()
+```
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+#
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<!-- ## References -->
+
+<hr />
+
+<p class="head02">
+Reference
+</p>
+
+Chapter 15: Stock, James H., and Mark W. Watson. 2020. Introduction to Econometrics. 4th ed. Pearson.
+
+<!--..........................................................................-->
+## 
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+<hr />
+
+<p class="back01">
+[Back To *Start Software Implementation*](../../index.html)
+</p>
+
+<!--..........................................................................-->
+<hr />
+
+
+
+
+
+<!--..........................................................................--> 
+<!-- THIS IS THE END --> 
+
+<!-- Include bottom -->
+
+````{=html}
+```{r, include=TRUE, echo=FALSE, results='asis'}
+xfun::file_string('bottom_01.html')
+```
+````

@@ -1,0 +1,573 @@
+---
+title: "Introductory Econometrics"
+subtitle: "*R* and *STATA* Code"
+author: by Markus Mößler and Marc Bachmeier
+output:
+  html_document:
+    highlight: tango
+    css: style.css
+    includes:
+      in_header: logo.html
+bibliography: [Teaching_References.bib]
+biblio-style: apalike
+link-citations: yes
+nocite: | 
+  @StockWatson2020Introduction
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Cross-Sectional Data | Limited Dependent Variable {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 11.4
+</p>
+
+Cross-section data on the Home Mortgage Disclosure Act contains 2380 observations on 14 variables. The dummy variable if the mortgage was denied is our dependent variable in a logit and a probit model.
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| deny          | Factor. Was the mortgage denied? |
+| afam          | Factor. Is the individual African-American?     |
+| pirat         | Payments to income ratio  |
+| hirat         | Housing expense to income ratio |
+| lvrat         | Loan to value ratio  |
+| chist         | Factor. Credit history: consumer payments  |
+| mhist         | Factor. Credit history: mortgage payments    |
+| phist         | Factor. Public bad credit record?   |
+| insurance     | Factor. Was the individual denied mortgage insurance?   |
+| selfemp       | Factor. Is the individual self-employed?    |
+
+<hr />
+
+<!--..........................................................................-->
+## *R* Sofware {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+
+<!--..........................................................................-->
+### Logit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("HMDA")
+
+#adjust variables for regression
+HMDA$lvrat <- factor(
+  ifelse(HMDA$lvrat < 0.8, "low",
+  ifelse(HMDA$lvrat >= 0.8 & HMDA$lvrat <= 0.95, "medium", "high")),
+  levels = c("low", "medium", "high"))
+HMDA$mhist <- as.numeric(HMDA$mhist)
+HMDA$chist <- as.numeric(HMDA$chist)
+
+
+# calculate and store regression results with logit model
+logit.11.4 <- glm(deny ~ afam + pirat + hirat + lvrat + chist + mhist + phist 
+                  + insurance + selfemp, data = HMDA, family = binomial(link = "logit"))
+
+# summarize regression results
+summary(logit.11.4)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("HMDA")
+
+#adjust variables for regression
+HMDA$lvrat <- factor(
+  ifelse(HMDA$lvrat < 0.8, "low",
+  ifelse(HMDA$lvrat >= 0.8 & HMDA$lvrat <= 0.95, "medium", "high")),
+  levels = c("low", "medium", "high"))
+HMDA$mhist <- as.numeric(HMDA$mhist)
+HMDA$chist <- as.numeric(HMDA$chist)
+
+# calculate and store regression results with logit model
+logit.11.4 <- glm(deny ~ afam + pirat + hirat + lvrat + chist + mhist + phist 
+                  + insurance + selfemp, data = HMDA, family = binomial(link = "logit"))
+
+# summarize regression results
+summary(logit.11.4)
+```
+
+<!--..........................................................................-->
+### Probit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("HMDA")
+
+# adjust variables for regression
+HMDA$lvrat <- factor(
+  ifelse(HMDA$lvrat < 0.8, "low",
+  ifelse(HMDA$lvrat >= 0.8 & HMDA$lvrat <= 0.95, "medium", "high")),
+  levels = c("low", "medium", "high"))
+HMDA$mhist <- as.numeric(HMDA$mhist)
+HMDA$chist <- as.numeric(HMDA$chist)
+
+# calculate and store regression results with probit model
+probit.11.4 <- glm(deny ~ afam + pirat + hirat + lvrat + chist + mhist + phist 
+                  + insurance + selfemp, data = HMDA, family = binomial(link = "probit"))
+
+# summarize regression results
+#summary(probit.11.4)
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessary 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("HMDA")
+
+# adjust variables for regression
+HMDA$lvrat <- factor(
+  ifelse(HMDA$lvrat < 0.8, "low",
+  ifelse(HMDA$lvrat >= 0.8 & HMDA$lvrat <= 0.95, "medium", "high")),
+  levels = c("low", "medium", "high"))
+HMDA$mhist <- as.numeric(HMDA$mhist)
+HMDA$chist <- as.numeric(HMDA$chist)
+
+# calculate and store regression results with probit model
+probit.11.4 <- glm(deny ~ afam + pirat + hirat + lvrat + chist + mhist + phist 
+                  + insurance + selfemp, data = HMDA, family = binomial(link = "probit"))
+
+# summarize regression results
+summary(probit.11.4)
+```
+
+
+<!--..........................................................................-->
+## STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<!--..........................................................................-->
+### Logit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/hmda_sw.dta
+
+# adjust variables for regression
+gen afam= (s13==3)
+gen mhist = s42
+gen chist = s43
+gen phist = (s44>0)
+gen insurance = (s53==1)
+gen selfemp = (s27a==1)
+gen deny= (s7==3)
+gen hirat= s45/100
+gen pirat= s46/100
+gen lvrat = s6/s50
+gen lvratmedium = (lvrat>=0.80)*(lvrat<=0.95)
+gen lvrathigh = (lvrat>0.95) 
+
+
+# calculate and show regression results with logit model
+logit deny afam pirat hirat lvratmedium lvrathigh chist mhist phist insurance selfemp
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Iteration 0:   log likelihood =  -872.0853  
+Iteration 1:   log likelihood = -672.05096  
+Iteration 2:   log likelihood = -656.94676  
+Iteration 3:   log likelihood = -636.05789  
+Iteration 4:   log likelihood = -635.63857  
+Iteration 5:   log likelihood = -635.63667  
+Iteration 6:   log likelihood = -635.63667  
+
+Logistic regression                             Number of obs     =      2,380
+                                                LR chi2(10)       =     472.90
+                                                Prob > chi2       =     0.0000
+Log likelihood = -635.63667                     Pseudo R2         =     0.2711
+
+------------------------------------------------------------------------------
+        deny |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        afam |   .6884231   .1773918     3.88   0.000     .3407416    1.036105
+       pirat |   4.764416   1.042587     4.57   0.000     2.720983     6.80785
+       hirat |  -.1088114   1.239403    -0.09   0.930    -2.537996    2.320374
+ lvratmedium |    .463525    .159096     2.91   0.004     .1517025    .7753475
+   lvrathigh |   1.494764   .3112213     4.80   0.000     .8847812    2.104746
+       chist |   .2903017   .0398178     7.29   0.000     .2122603    .3683431
+       mhist |   .2790178   .1399192     1.99   0.046     .0047811    .5532544
+       phist |   1.225797   .2054334     5.97   0.000     .8231547    1.628439
+   insurance |   4.548166   .5524863     8.23   0.000     3.465312    5.631019
+     selfemp |   .6661288   .2115319     3.15   0.002     .2515338    1.080724
+       _cons |  -5.707384   .4097911   -13.93   0.000    -6.510559   -4.904208
+------------------------------------------------------------------------------
+
+</pre>
+
+<!--..........................................................................-->
+### Probit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+use http://fmwww.bc.edu/ec-p/data/stockwatson/hmda_sw.dta
+
+# adjust variables for regression
+gen afam= (s13==3)
+gen mhist = s42
+gen chist = s43
+gen phist = (s44>0)
+gen insurance = (s53==1)
+gen selfemp = (s27a==1)
+gen deny= (s7==3)
+gen hirat= s45/100
+gen pirat= s46/100
+gen lvrat = s6/s50
+gen lvratmedium = (lvrat>=0.80)*(lvrat<=0.95)
+gen lvrathigh = (lvrat>0.95) 
+
+
+# calculate and show regression results with logit model
+probit deny afam pirat hirat lvratmedium lvrathigh chist mhist phist insurance selfemp
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Iteration 0:   log likelihood =  -872.0853  
+Iteration 1:   log likelihood = -643.92086  
+Iteration 2:   log likelihood = -636.87532  
+Iteration 3:   log likelihood = -636.84706  
+Iteration 4:   log likelihood = -636.84706  
+
+Probit regression                               Number of obs     =      2,380
+                                                LR chi2(10)       =     470.48
+                                                Prob > chi2       =     0.0000
+Log likelihood = -636.84706                     Pseudo R2         =     0.2697
+
+------------------------------------------------------------------------------
+        deny |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        afam |   .3891261   .0966749     4.03   0.000     .1996468    .5786054
+       pirat |   2.441787   .5279727     4.62   0.000     1.406979    3.476594
+       hirat |  -.1846764   .6519372    -0.28   0.777     -1.46245    1.093097
+ lvratmedium |   .2139677   .0819881     2.61   0.009      .053274    .3746614
+   lvrathigh |   .7910831   .1744755     4.53   0.000     .4491174    1.133049
+       chist |   .1546224   .0214869     7.20   0.000     .1125089     .196736
+       mhist |   .1477082   .0735792     2.01   0.045     .0034956    .2919209
+       phist |   .6974496   .1190143     5.86   0.000     .4641859    .9307134
+   insurance |   2.556796   .2814955     9.08   0.000     2.005075    3.108517
+     selfemp |   .3586252     .11169     3.21   0.001     .1397168    .5775336
+       _cons |  -3.040568   .2014292   -15.09   0.000    -3.435362   -2.645774
+------------------------------------------------------------------------------
+
+</pre>
+
+
+<!--..........................................................................-->
+## Gretl {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Data
+</p>
+
+You can download and install the data sets from the Stock and Watson textbook from the following link: 
+http://gretl.sourceforge.net/gretl_data.html \
+The data sets are automatically saved in the Gretl folder under data. Alternatively, another storage location can be selected. Afterwards the data sets can easily be opened via the script with the command open. Alternatively, under the tab file, Open data can be selected and from the folder in which the data sets were stored the desired data set can be selected.
+
+<!--..........................................................................-->
+### Logit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open boston_hmda.gdt
+
+# adjust variables for regression
+genr afam = (s13==3)
+genr mhist = s42
+genr chist = s43
+genr phist = (s44>0)
+genr insureance = (s53==1)
+genr selfemp = (s27a==1)
+genr deny = (s7==3)
+genr hirat = s45/100
+genr pirat = s46/100
+genr lvrat = s6/s50
+genr lvratmedium = (lvrat>=0.80)*(lvrat<=0.95)
+genr lvrathigh = (lvrat>0.95)
+
+
+# calculate and show regression results with logit model
+logit deny 0 afam pirat hirat lvratmedium lvrathigh chist mhist phist insureance selfemp
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Logit, using observations 1-2380
+Dependent variable: deny
+Standard errors based on Hessian
+
+                coefficient   std. error       z          slope   
+  ----------------------------------------------------------------
+  const          −5.70738     0.409791     −13.93                 
+  afam            0.688423    0.177392       3.881      0.0604745 
+  pirat           4.76442     1.04259        4.570      0.338242  
+  hirat          −0.108811    1.23940       −0.08779   −0.00772488
+  lvratmedium     0.463525    0.159096       2.913      0.0347313 
+  lvrathigh       1.49476     0.311221       4.803      0.187854  
+  chist           0.290302    0.0398178      7.291      0.0206095 
+  mhist           0.279018    0.139919       1.994      0.0198084 
+  phist           1.22580     0.205433       5.967      0.135211  
+  insureance      4.54817     0.552486       8.232      0.807109  
+  selfemp         0.666129    0.211532       3.149      0.0589217 
+
+Mean dependent var   0.119748   S.D. dependent var   0.324735
+McFadden R-squared   0.271130   Adjusted R-squared   0.258517
+Log-likelihood      −635.6367   Akaike criterion     1293.273
+Schwarz criterion    1356.797   Hannan-Quinn         1316.393
+
+Number of cases 'correctly predicted' = 2155 (90.5%)
+f(beta'x) at mean of independent vars = 0.071
+Likelihood ratio test: Chi-square(10) = 472.897 [0.0000]
+
+           Predicted
+               0      1
+  Actual 0  2067     28
+         1   197     88
+
+Excluding the constant, p-value was highest for variable 23 (hirat)
+
+</pre>
+
+
+<!--..........................................................................-->
+### Probit {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for regression
+open boston_hmda.gdt
+
+# adjust variables for regression
+genr afam = (s13==3)
+genr mhist = s42
+genr chist = s43
+genr phist = (s44>0)
+genr insureance = (s53==1)
+genr selfemp = (s27a==1)
+genr deny = (s7==3)
+genr hirat = s45/100
+genr pirat = s46/100
+genr lvrat = s6/s50
+genr lvratmedium = (lvrat>=0.80)*(lvrat<=0.95)
+genr lvrathigh = (lvrat>0.95)
+
+
+# calculate and show regression results with probit model
+probit deny 0 afam pirat hirat lvratmedium lvrathigh chist mhist phist insureance selfemp
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+Model 1: Probit, using observations 1-2380
+Dependent variable: deny
+Standard errors based on Hessian
+
+                coefficient   std. error      z         slope   
+  --------------------------------------------------------------
+  const          −3.04057     0.201429     −15.09               
+  afam            0.389126    0.0966749      4.025     0.0710011
+  pirat           2.44179     0.527973       4.625     0.369302 
+  hirat          −0.184676    0.651937      −0.2833   −0.0279309
+  lvratmedium     0.213968    0.0819881      2.610     0.0336387
+  lvrathigh       0.791083    0.174475       4.534     0.187192 
+  chist           0.154622    0.0214869      7.196     0.0233855
+  mhist           0.147708    0.0735792      2.007     0.0223398
+  phist           0.697450    0.119014       5.860     0.153286 
+  insureance      2.55680     0.281495       9.083     0.792706 
+  selfemp         0.358625    0.111690       3.211     0.0652745
+
+Mean dependent var   0.119748   S.D. dependent var   0.324735
+McFadden R-squared   0.269742   Adjusted R-squared   0.257129
+Log-likelihood      −636.8471   Akaike criterion     1295.694
+Schwarz criterion    1359.218   Hannan-Quinn         1318.814
+
+Number of cases 'correctly predicted' = 2150 (90.3%)
+f(beta'x) at mean of independent vars = 0.151
+Likelihood ratio test: Chi-square(10) = 470.476 [0.0000]
+
+           Predicted
+               0      1
+  Actual 0  2068     27
+         1   203     82
+
+Excluding the constant, p-value was highest for variable 23 (hirat)
+
+Test for normality of residual -
+  Null hypothesis: error is normally distributed
+  Test statistic: Chi-square(2) = 5.78411
+  with p-value = 0.0554622
+
+</pre>
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+## References
+
+<hr />
+
+<p class="head01">
+References
+</p>
+
+<!--##########################################################################-->
+<!-- THIS IS THE END --> 
+<script>
+var coll = document.getElementsByClassName("collapsible01");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+
+<script>
+var coll = document.getElementsByClassName("collapsible02");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>

@@ -1,0 +1,224 @@
+---
+title: "Introductory Econometrics"
+subtitle: "*R* and *STATA* Code"
+author: by Markus Mößler and Marc Bachmeier
+output:
+  html_document:
+    highlight: tango
+    css: style.css
+    includes:
+      in_header: logo.html
+bibliography: [Teaching_References.bib]
+biblio-style: apalike
+link-citations: yes
+nocite: | 
+  @StockWatson2020Introduction
+---
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+```{r,include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 8)
+options(scipen=1)
+```
+
+```{r,klippy, echo=FALSE, include=TRUE}
+#See: https://rlesur.github.io/klippy/articles/klippy.html
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done', position = c('top', 'right'))
+```
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+<hr />
+
+<!--..........................................................................-->
+# Regression Analysis with Cross-Sectional Data | Inference {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head01">
+Chapter 7.3
+</p>
+
+The dataset contains data on test performance, school characteristics and student demographic backgrounds for school districts in California with 420 observations on 14 variables. We calculate a linear regression with the average math and reading score as the dependent variable. We want to test if the student teacher ratio and the expenditure are jointly significant in this equation.
+
+
+| Variable name | Description   |
+| ------------- |:-----------------------:|
+| read          | Average reading score |
+| math          | Average math score      |
+| english       | Percent of English learners      |
+| students      | Total enrollment      |
+| teachers      | Number of teachers   |
+| expenditure   | Expenditure per student   |
+
+
+<hr />
+
+<!--..........................................................................-->
+## *R* Sofware {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,results='hide'}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.7.1 <- lm(score ~ str + english + expenditure, data = CASchools)
+
+# install required package if necessary 
+# install.packages("car")
+
+# load required package
+library("car")
+
+# Test for joint significance
+linearHypothesis(lm.7.1,c("str=0","expenditure=0"))
+```
+
+<hr />
+
+<p class="head02">
+Output 
+</p>
+
+```{r,echo=FALSE}
+# install package with data sets if necessarry 
+# install.packages("AER")
+
+# load package with data sets
+library("AER")
+
+# load data set for regression
+data("CASchools")
+
+# generate new variables for regression
+CASchools$str <- CASchools$students/CASchools$teachers       
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# calculate and store regression results
+lm.7.1 <- lm(score ~ str + english + expenditure, data = CASchools)
+
+# install required package if necessary 
+# install.packages("car")
+
+# load required package
+library("car")
+
+# Test for joint significance
+linearHypothesis(lm.7.1,c("str=0","expenditure=0"))
+```
+
+<!--..........................................................................-->
+## STATA {.tabset .tabset-fade}
+<!--..........................................................................-->
+
+<hr />
+
+<p class="head02">
+Code 
+</p>
+
+```{r,eval=FALSE}
+# load data set for Inference
+use http://fmwww.bc.edu/ec-p/data/stockwatson/caschool.dta
+
+# rename variables
+rename testscr score
+rename el_pct english
+rename expn_stu expenditure
+ 
+# calculate and store regression results
+quietly reg score str english expenditure
+ 
+# Test for joint significance
+test expenditure str
+```
+
+<p class="head02">
+Output 
+</p>
+
+
+<pre>
+
+ ( 1)  expenditure = 0
+ ( 2)  str = 0
+
+       F(  2,   416) =    8.01
+            Prob > F =    0.0004
+
+</pre>
+
+
+<!--..........................................................................-->
+<!--..........................................................................-->
+
+## References
+
+<hr />
+
+<p class="head01">
+References
+</p>
+
+<!--##########################################################################-->
+<!-- THIS IS THE END --> 
+<script>
+var coll = document.getElementsByClassName("collapsible01");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+
+<script>
+var coll = document.getElementsByClassName("collapsible02");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
